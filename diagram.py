@@ -2,7 +2,6 @@ crossing = tuple[int, int, int, int]
 pd_notation = list[crossing]
 
 
-
 class KnotDiagram:
     def __init__(self, pd_code):
         self.pd_code: pd_notation = pd_code
