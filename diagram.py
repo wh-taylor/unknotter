@@ -1,32 +1,33 @@
+from __future__ import annotations
+
 crossing = tuple[int, int, int, int]
 pd_notation = list[crossing]
-
 
 class KnotDiagram:
     def __init__(self, pd_code):
         self.pd_code: pd_notation = pd_code
     
-    def __repr__(self):
+    def __repr__(self) -> KnotDiagram:
         return 'PD { ' + ',\n     '.join('(' + ', '.join(str(e) for e in crossing) + ')' for crossing in self.pd_code) + ' }'
 
-    def reverse(self):
+    def reverse(self) -> KnotDiagram:
         return KnotDiagram({(d, c, b, a) for (a, b, c, d) in self.pd_code})
     
-    def reflect(self):
+    def reflect(self) -> KnotDiagram:
         return KnotDiagram({(a, d, c, b) for (a, b, c, d) in self.pd_code})
     
-    def edge_map(self, f, new_crossings: list[crossing]):
+    def edge_map(self, f, new_crossings: list[crossing]) -> KnotDiagram:
         pd_code = {tuple(f(e, x) for e in x) for x in self.pd_code}
         for crossing in new_crossings: pd_code.add(crossing)
         return KnotDiagram(pd_code)
 
-    def unchanged(self):
+    def unchanged(self) -> KnotDiagram:
         return self.edge_map(
             lambda e, _: e,
             []
         )
 
-    def add_negR1(self, edge: int):
+    def add_negR1(self, edge: int) -> KnotDiagram:
         return self.edge_map(
             lambda e, x:
                 e if e < edge else
@@ -35,7 +36,7 @@ class KnotDiagram:
             [(edge, edge+1, edge+1, edge+2)]
         )
 
-    def add_posR1(self, edge: int):
+    def add_posR1(self, edge: int) -> KnotDiagram:
         return self.edge_map(
             lambda e, x:
                 e if e < edge else
@@ -44,7 +45,7 @@ class KnotDiagram:
             [(edge+1, edge+1, edge+2, edge)]
         )
 
-    def add_underR2(self, edge1, edge2):
+    def add_underR2(self, edge1, edge2) -> KnotDiagram:
         a = min(edge1, edge2)
         b = max(edge1, edge2)
         return self.edge_map(
@@ -62,7 +63,7 @@ class KnotDiagram:
             }
         )
 
-    def add_overR2(self, edge1, edge2):
+    def add_overR2(self, edge1, edge2) -> KnotDiagram:
         a = min(edge1, edge2)
         b = max(edge1, edge2)
         return self.edge_map(
