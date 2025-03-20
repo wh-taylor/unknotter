@@ -15,6 +15,8 @@ def knot(crossings: int, index: int, alt_status: str = ''):
         raise KeyError("knots with crossings 10 or fewer are not distinguished by alternating or non-alternating.")
 
     name = f'{crossings}{alt_status}_{index}'
+
+    if name == '0_1': return Diagram([])
     
     try:
         raw_pd = _knot_catalog[name]
