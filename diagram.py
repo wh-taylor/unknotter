@@ -147,6 +147,15 @@ class Diagram:
         disjoint_unknot_poly = UnivariateKnotPolynomial({2: -1, -2: -1})
 
         return sum((UnivariateKnotPolynomial({power1: 1}) * disjoint_unknot_poly**(power2-1) for power1, power2 in newlist), UnivariateKnotPolynomial.additive_identity())
+    
+    def get_writhe(self) -> int:
+        writhe = 0
+        for _, b, _, d in self.pd_code:
+            if Diagram._shift_edge(b, 1, 2*len(self.pd_code)) == d:
+                writhe += 1
+            else:
+                writhe -= 1
+        return writhe
 
     # Return the Jones polynomial of a diagram.
     def get_jones_polynomial(self) -> UnivariateKnotPolynomial:
