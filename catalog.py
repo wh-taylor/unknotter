@@ -8,9 +8,19 @@ with open('knotinfo.csv') as f:
         name, raw_pd = parts[0], parts[1]
         knots[name] = raw_pd
 
-def knot(crossings, index, alt_status=''):
+def knot(crossings: int, index: int, alt_status: str = ''):
+    if alt_status == '' and crossings > 10:
+        raise KeyError("knots with greater than 10 crossings require an argument 'a' or 'n'.")
+    if alt_status != '' and crossings <= 10:
+        raise KeyError("knots with crossings 10 or fewer are not distinguished by alternating or non-alternating.")
+
     name = f'{crossings}{alt_status}_{index}'
-    raw_pd = knots[name]
+    
+    try:
+        raw_pd = knots[name]
+    except KeyError:
+        raise KeyError(f"knot {name} does not exist.")
+
     str_ns = raw_pd.replace('[', '').replace(']', '').strip().split(';')
     ns = list(map(int, str_ns))
     pd = set()
