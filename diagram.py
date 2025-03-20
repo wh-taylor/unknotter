@@ -1,4 +1,7 @@
 from __future__ import annotations
+from itertools import product
+from math import prod
+from polynomial import *
 
 Edge = int
 Crossing = tuple[Edge, Edge, Edge, Edge]
@@ -97,8 +100,56 @@ class Diagram:
     def join(self, other: Diagram, self_edge: Edge, other_edge: Edge) -> Diagram:
         raise NotImplemented
 
+    # Return the Kauffman bracket of a diagram.
+    def get_kauffman_bracket(self) -> UnivariateKnotPolynomial:
+        if self == Diagram([]): return UnivariateKnotPolynomial({0: 1})
+
+        factored_poly = [(((a, d), (b, c)), ((a, b), (c, d))) for a, b, c, d in self.pd_code]
+
+        distributed_poly = [(3-2*sum(ii), [factor for term in terms for factor in term]) for ii, terms in zip(product(*(range(len(x)) for x in factored_poly)), product(*factored_poly))]
+
+        for power, term in distributed_poly:
+            matched_at_all = True
+            while matched_at_all:
+                matched_at_all = False
+                i = 0
+                if len(term) == 1: break
+                while i < len(term):
+                    # print(term)
+                    j = i + 1
+                    while j < len(term):
+                        x1, x2 = term[i], term[j]
+                        a1, b1 = x1
+                        a2, b2 = x2
+
+                        matched = True
+
+                        if a1 == b2 and a2 == b1 or a1 == a2 and b1 == b2:
+                            term.append((a1, a1))
+                        elif a1 == a2:
+                            term.append((b1, b2))
+                        elif a1 == b2:
+                            term.append((b1, a2))
+                        elif b1 == a2:
+                            term.append((a1, b2))
+                        elif b1 == b2:
+                            term.append((a1, a2))
+                        else:
+                            matched = False
+
+                        if matched: del term[j], term[i]
+                        if matched: matched_at_all = True
+                        j += 1
+                    i += 1
+
+        newlist = [(power, len(term)) for power, term in distributed_poly]
+
+        disjoint_unknot_poly = UnivariateKnotPolynomial({2: -1, -2: -1})
+
+        return sum((UnivariateKnotPolynomial({power1: 1}) * disjoint_unknot_poly**(power2-1) for power1, power2 in newlist), UnivariateKnotPolynomial.additive_identity())
+
     # Return the Jones polynomial of a diagram.
-    def get_jones_polynomial(self):
+    def get_jones_polynomial(self) -> UnivariateKnotPolynomial:
         raise NotImplemented
 
     # Readjust the edge values of `diagram` with the expectation of a twist at `target_edge`.
