@@ -75,6 +75,7 @@ class Diagram:
 
     # Check if a diagram is equivalent to another considering orientation.
     def __eq__(self, diagram2: Diagram):
+        if self.pd_code == diagram2.pd_code: return True
         for n in range(2*len(self.pd_code)):
             if self.shift(n).identical(diagram2):
                 return True
