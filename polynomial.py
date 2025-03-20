@@ -53,11 +53,9 @@ class MultivariateKnotPolynomial:
     def __pow__(self, power: int):
         if power < 0:
             raise ValueError("cannot take a knot polynomial to a negative power.")
-        if power == 0:
-            return MultivariateKnotPolynomial(self.n_vars, {(0,): 1})
 
-        p = MultivariateKnotPolynomial(self.n_vars, self.coefficients.copy())
-        for i in range(power-1):
+        p = MultivariateKnotPolynomial.multiplicative_identity(self.n_vars)
+        for i in range(power):
             p *= self
         return p
     
@@ -70,7 +68,19 @@ class MultivariateKnotPolynomial:
                 ('' if power == 0 else var if power == 1 else f"{var}^{power}") for power, var in zip(powers, vars)
             ]) for powers, coefficient in self.coefficients.items() if coefficient != 0
         ])
+    
+    def additive_identity(n_vars) -> MultivariateKnotPolynomial:
+        return MultivariateKnotPolynomial(n_vars, {})
+    
+    def multiplicative_identity(n_vars) -> UnivariateKnotPolynomial:
+        return MultivariateKnotPolynomial(n_vars, {(0,)*n_vars: 1})
 
 class UnivariateKnotPolynomial(MultivariateKnotPolynomial):
     def __init__(self, coefficients: dict[int, int]):
         super().__init__(1, {(power,): coefficient for power, coefficient in coefficients.items()})
+    
+    def additive_identity() -> UnivariateKnotPolynomial:
+        return UnivariateKnotPolynomial({})
+    
+    def multiplicative_identity() -> UnivariateKnotPolynomial:
+        return UnivariateKnotPolynomial({0: 1})
