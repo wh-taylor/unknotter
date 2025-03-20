@@ -63,11 +63,26 @@ class MultivariateKnotPolynomial:
         return self.coefficients[power]
     
     def read(self, *vars: str) -> str:
-        return ' + '.join([
-            str(coefficient) + ''.join([
-                ('' if power == 0 else var if power == 1 else f"{var}^{power}") for power, var in zip(powers, vars)
-            ]) for powers, coefficient in self.coefficients.items() if coefficient != 0
-        ])
+        out = ''
+        for i, (powers, coefficient) in enumerate(sorted(self.coefficients.items())):
+            if coefficient == 0: continue
+
+            if i == 0 and coefficient < 0:
+                out += '- '
+            elif i != 0 and coefficient > 0:
+                out += ' + '
+            elif coefficient < 0:
+                out += ' - '
+
+            if abs(coefficient) != 1 :
+                out += str(abs(coefficient))
+
+            for power, var in zip(powers, vars):
+                if power != 0:
+                    out += var
+                    if power != 1:
+                        out += '^' + str(power)
+        return out
     
     def additive_identity(n_vars) -> MultivariateKnotPolynomial:
         return MultivariateKnotPolynomial(n_vars, {})
