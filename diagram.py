@@ -159,7 +159,10 @@ class Diagram:
 
     # Return the Jones polynomial of a diagram.
     def get_jones_polynomial(self) -> UnivariateKnotPolynomial:
-        raise NotImplemented
+        writhe = self.get_writhe()
+        kauffman_bracket = self.get_kauffman_bracket() * UnivariateKnotPolynomial({-3*writhe: -(-1)**writhe})
+        coefficients = {-powers[0]/4: coefficients for powers, coefficients in kauffman_bracket.coefficients.items()}
+        return UnivariateKnotPolynomial(coefficients)
 
     # Readjust the edge values of `diagram` with the expectation of a twist at `target_edge`.
     def _prepare_twist(self, target_edge: Edge) -> PDNotation:
