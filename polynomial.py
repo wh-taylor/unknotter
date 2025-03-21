@@ -22,6 +22,9 @@ class MultivariateKnotPolynomial:
         
         return sum
     
+    def __eq__(self, other: MultivariateKnotPolynomial) -> bool:
+        return self.coefficients == other.coefficients and self.n_vars == other.n_vars
+    
     def __add__(self, other: MultivariateKnotPolynomial):
         if self.n_vars != other.n_vars:
             raise TypeError("cannot add two polynomials with different numbers of variables.")
