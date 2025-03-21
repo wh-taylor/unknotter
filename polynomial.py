@@ -1,13 +1,28 @@
 from __future__ import annotations
 
 class KnotPoly:
-    def __init__(self, n_vars: int, coefficients: dict[tuple[int, ...], int]):
-        self.n_vars = n_vars
-        self.coefficients = {powers: coefficient for powers, coefficient in coefficients.items() if coefficient != 0}
+    def __init__(self, coefficients: dict[tuple[int, ...], int] | dict[int, int]):
+        # If `coefficients` uses integer powers instead of tuple powers,
+        # we want to force it into tuple powers.
+        corrected_coefficients: dict[tuple[int, ...], int] = {}
+        if all(isinstance(key, int) for key in coefficients):
+            corrected_coefficients = {(power,): coefficient for power, coefficient in coefficients.items()}
+        else:
+            corrected_coefficients = coefficients
+
+        # Set the number of variables to the length of the number of powers
+        # used in defining the first term.
+        self.n_vars = len(next(power for power in corrected_coefficients))
+
+        self.coefficients = {
+            powers: coefficient 
+            for powers, coefficient
+            in corrected_coefficients.items()
+            if coefficient != 0}
         
-        for power in coefficients:
-            if len(power) != n_vars:
-                raise TypeError(f"{len(power)} variables counted, expected {n_vars}.")
+        for powers in corrected_coefficients:
+            if len(powers) != self.n_vars:
+                raise TypeError(f"{len(powers)} variables counted, expected {self.n_vars}.")
     
     def __call__(self, *values: float) -> float:
         if len(values) != self.n_vars:
@@ -66,6 +81,8 @@ class KnotPoly:
         return self.coefficients[power]
     
     def var(self, *vars: str) -> str:
+        if len(vars) != self.n_vars:
+            raise ValueError(f"expected {self.n_vars} variables, received {len(vars)}: {', '.join(vars)}")
         out = ''
         for i, (powers, coefficient) in enumerate(sorted(self.coefficients.items())):
             if i == 0 and coefficient < 0:
