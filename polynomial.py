@@ -62,7 +62,7 @@ class MultivariateKnotPolynomial:
     def get_coefficient_from_power(self, power: int):
         return self.coefficients[power]
     
-    def read(self, *vars: str) -> str:
+    def eval(self, *vars: str) -> str:
         out = ''
         for i, (powers, coefficient) in enumerate(sorted(self.coefficients.items())):
             if coefficient == 0: continue
@@ -74,7 +74,7 @@ class MultivariateKnotPolynomial:
             elif coefficient < 0:
                 out += ' - '
 
-            if abs(coefficient) != 1 :
+            if abs(coefficient) != 1 or all(power == 0 for power in powers):
                 out += str(abs(coefficient))
 
             for power, var in zip(powers, vars):
