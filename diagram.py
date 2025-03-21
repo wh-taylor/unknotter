@@ -145,7 +145,7 @@ class Diagram:
 
         disjoint_unknot_poly = KnotPoly({2: -1, -2: -1})
 
-        return sum((KnotPoly({power1: 1}) * disjoint_unknot_poly**(power2-1) for power1, power2 in newlist), KnotPoly.additive_identity())
+        return sum((KnotPoly({power1: 1}) * disjoint_unknot_poly**(power2-1) for power1, power2 in newlist), KnotPoly.zero())
     
     def get_writhe(self) -> int:
         writhe = 0
