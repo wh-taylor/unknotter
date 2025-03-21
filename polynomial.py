@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 class KnotPoly:
-    def __init__(self, coefficients: dict[tuple[int, ...], int] | dict[int, int]):
+    def __init__(self, coefficients: dict[tuple[int, ...], int] | dict[int, int], fallback_n_vars: int = 0):
         # If `coefficients` uses integer powers instead of tuple powers,
         # we want to force it into tuple powers.
         corrected_coefficients: dict[tuple[int, ...], int] = {}
@@ -9,10 +9,13 @@ class KnotPoly:
             corrected_coefficients = {(power,): coefficient for power, coefficient in coefficients.items()}
         else:
             corrected_coefficients = coefficients
-
-        # Set the number of variables to the length of the number of powers
-        # used in defining the first term.
-        self.n_vars = len(next(power for power in corrected_coefficients))
+        
+        if len(corrected_coefficients) == 0:
+            self.n_vars = fallback_n_vars
+        else:
+            # Set the number of variables to the length of the number of powers
+            # used in defining the first term.
+            self.n_vars = len(next(power for power in corrected_coefficients))
 
         self.coefficients = {
             powers: coefficient 
@@ -51,7 +54,7 @@ class KnotPoly:
             sum = self.coefficients.get(powers, 0) + other.coefficients.get(powers, 0)
             new_coefficients[powers] = sum
 
-        return KnotPoly(self.n_vars, new_coefficients)
+        return KnotPoly(new_coefficients)
     
     def __mul__(self, other: KnotPoly):
         if self.n_vars != other.n_vars:
@@ -66,7 +69,7 @@ class KnotPoly:
                     new_coefficients[prod_power] = 0
                 new_coefficients[prod_power] += coefficient1 * coefficient2
 
-        return KnotPoly(self.n_vars, new_coefficients)
+        return KnotPoly(new_coefficients)
     
     def __pow__(self, power: int):
         if power < 0:
@@ -106,11 +109,11 @@ class KnotPoly:
                             out += str(power)
         return out
     
-    def zero(n_vars) -> KnotPoly:
-        return KnotPoly(n_vars, {})
+    def zero(n_vars: int = 1) -> KnotPoly:
+        return KnotPoly({}, n_vars)
     
-    def one(n_vars) -> KnotPoly:
-        return KnotPoly(n_vars, {(0,)*n_vars: 1})
+    def one(n_vars: int = 1) -> KnotPoly:
+        return KnotPoly({(0,)*n_vars: 1})
     
     def univariate(coefficients: dict[int, int]):
         """Initialize a univariate knot polynomial."""
