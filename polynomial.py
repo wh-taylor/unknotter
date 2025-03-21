@@ -114,7 +114,4 @@ class KnotPoly:
     
     def one(n_vars: int = 1) -> KnotPoly:
         return KnotPoly({(0,)*n_vars: 1})
-    
-    def univariate(coefficients: dict[int, int]):
-        """Initialize a univariate knot polynomial."""
-        return KnotPoly(1, {(power,): coefficient for power, coefficient in coefficients.items()})
+
