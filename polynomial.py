@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-class MultivariateKnotPolynomial:
+class KnotPoly:
     def __init__(self, n_vars: int, coefficients: dict[tuple[int, ...], int]):
         self.n_vars = n_vars
         self.coefficients = {powers: coefficient for powers, coefficient in coefficients.items() if coefficient != 0}
@@ -22,10 +22,10 @@ class MultivariateKnotPolynomial:
         
         return sum
     
-    def __eq__(self, other: MultivariateKnotPolynomial) -> bool:
+    def __eq__(self, other: KnotPoly) -> bool:
         return self.coefficients == other.coefficients and self.n_vars == other.n_vars
     
-    def __add__(self, other: MultivariateKnotPolynomial):
+    def __add__(self, other: KnotPoly):
         if self.n_vars != other.n_vars:
             raise TypeError("cannot add two polynomials with different numbers of variables.")
 
@@ -36,9 +36,9 @@ class MultivariateKnotPolynomial:
             sum = self.coefficients.get(powers, 0) + other.coefficients.get(powers, 0)
             new_coefficients[powers] = sum
 
-        return MultivariateKnotPolynomial(self.n_vars, new_coefficients)
+        return KnotPoly(self.n_vars, new_coefficients)
     
-    def __mul__(self, other: MultivariateKnotPolynomial):
+    def __mul__(self, other: KnotPoly):
         if self.n_vars != other.n_vars:
             raise TypeError("cannot multiply two polynomials with different numbers of variables.")
 
@@ -51,13 +51,13 @@ class MultivariateKnotPolynomial:
                     new_coefficients[prod_power] = 0
                 new_coefficients[prod_power] += coefficient1 * coefficient2
 
-        return MultivariateKnotPolynomial(self.n_vars, new_coefficients)
+        return KnotPoly(self.n_vars, new_coefficients)
     
     def __pow__(self, power: int):
         if power < 0:
             raise ValueError("cannot take a knot polynomial to a negative power.")
 
-        p = MultivariateKnotPolynomial.multiplicative_identity(self.n_vars)
+        p = KnotPoly.multiplicative_identity(self.n_vars)
         for i in range(power):
             p *= self
         return p
@@ -89,18 +89,12 @@ class MultivariateKnotPolynomial:
                             out += str(power)
         return out
     
-    def additive_identity(n_vars) -> MultivariateKnotPolynomial:
-        return MultivariateKnotPolynomial(n_vars, {})
+    def additive_identity(n_vars) -> KnotPoly:
+        return KnotPoly(n_vars, {})
     
-    def multiplicative_identity(n_vars) -> UnivariateKnotPolynomial:
-        return MultivariateKnotPolynomial(n_vars, {(0,)*n_vars: 1})
-
-class UnivariateKnotPolynomial(MultivariateKnotPolynomial):
-    def __init__(self, coefficients: dict[int, int]):
-        super().__init__(1, {(power,): coefficient for power, coefficient in coefficients.items()})
+    def multiplicative_identity(n_vars) -> KnotPoly:
+        return KnotPoly(n_vars, {(0,)*n_vars: 1})
     
-    def additive_identity() -> UnivariateKnotPolynomial:
-        return UnivariateKnotPolynomial({})
-    
-    def multiplicative_identity() -> UnivariateKnotPolynomial:
-        return UnivariateKnotPolynomial({0: 1})
+    def univariate(coefficients: dict[int, int]):
+        """Initialize a univariate knot polynomial."""
+        return KnotPoly(1, {(power,): coefficient for power, coefficient in coefficients.items()})
