@@ -115,7 +115,6 @@ class Diagram:
                 i = 0
                 if len(term) == 1: break
                 while i < len(term):
-                    # print(term)
                     j = i + 1
                     while j < len(term):
                         x1, x2 = term[i], term[j]
@@ -160,8 +159,9 @@ class Diagram:
     # Return the Jones polynomial of a diagram.
     def get_jones_polynomial(self) -> UnivariateKnotPolynomial:
         writhe = self.get_writhe()
-        kauffman_bracket = self.get_kauffman_bracket() * UnivariateKnotPolynomial({-3*writhe: -(-1)**writhe})
-        coefficients = {-powers[0]/4: coefficients for powers, coefficients in kauffman_bracket.coefficients.items()}
+        kauffman_bracket = self.get_kauffman_bracket()
+        raw_jones_polynomial = kauffman_bracket * UnivariateKnotPolynomial({-3*writhe: 1 if writhe % 2 == 0 else -1})
+        coefficients = {-powers[0]/4: coefficients for powers, coefficients in raw_jones_polynomial.coefficients.items()}
         return UnivariateKnotPolynomial(coefficients)
 
     # Readjust the edge values of `diagram` with the expectation of a twist at `target_edge`.
