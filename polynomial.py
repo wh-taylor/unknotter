@@ -3,7 +3,7 @@ from __future__ import annotations
 class MultivariateKnotPolynomial:
     def __init__(self, n_vars: int, coefficients: dict[tuple[int, ...], int]):
         self.n_vars = n_vars
-        self.coefficients = coefficients
+        self.coefficients = {powers: coefficient for powers, coefficient in coefficients.items() if coefficient != 0}
         
         for power in coefficients:
             if len(power) != n_vars:
@@ -62,14 +62,12 @@ class MultivariateKnotPolynomial:
     def get_coefficient_from_power(self, power: int):
         return self.coefficients[power]
     
-    def eval(self, *vars: str) -> str:
+    def var(self, *vars: str) -> str:
         out = ''
         for i, (powers, coefficient) in enumerate(sorted(self.coefficients.items())):
-            if coefficient == 0: continue
-
             if i == 0 and coefficient < 0:
                 out += '- '
-            elif i != 0 and coefficient > 0:
+            elif i != 0 and coefficient >= 0:
                 out += ' + '
             elif coefficient < 0:
                 out += ' - '
@@ -81,7 +79,11 @@ class MultivariateKnotPolynomial:
                 if power != 0:
                     out += var
                     if power != 1:
-                        out += '^' + str(power)
+                        out += '^'
+                        if power.is_integer():
+                            out += str(int(power))
+                        else:
+                            out += str(power)
         return out
     
     def additive_identity(n_vars) -> MultivariateKnotPolynomial:
