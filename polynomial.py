@@ -57,7 +57,7 @@ class KnotPoly:
         if power < 0:
             raise ValueError("cannot take a knot polynomial to a negative power.")
 
-        p = KnotPoly.multiplicative_identity(self.n_vars)
+        p = KnotPoly.one(self.n_vars)
         for i in range(power):
             p *= self
         return p
@@ -89,10 +89,10 @@ class KnotPoly:
                             out += str(power)
         return out
     
-    def additive_identity(n_vars) -> KnotPoly:
+    def zero(n_vars) -> KnotPoly:
         return KnotPoly(n_vars, {})
     
-    def multiplicative_identity(n_vars) -> KnotPoly:
+    def one(n_vars) -> KnotPoly:
         return KnotPoly(n_vars, {(0,)*n_vars: 1})
     
     def univariate(coefficients: dict[int, int]):

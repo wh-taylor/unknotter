@@ -101,8 +101,8 @@ class Diagram:
         raise NotImplemented
 
     # Return the Kauffman bracket of a diagram.
-    def get_kauffman_bracket(self) -> UnivariateKnotPolynomial:
-        if self == Diagram([]): return UnivariateKnotPolynomial({0: 1})
+    def get_kauffman_bracket(self) -> KnotPoly:
+        if self == Diagram([]): return KnotPoly({0: 1})
 
         factored_poly = [(((a, d), (b, c)), ((a, b), (c, d))) for a, b, c, d in self.pd_code]
 
@@ -143,9 +143,9 @@ class Diagram:
 
         newlist = [(power, len(term)) for power, term in distributed_poly]
 
-        disjoint_unknot_poly = UnivariateKnotPolynomial({2: -1, -2: -1})
+        disjoint_unknot_poly = KnotPoly({2: -1, -2: -1})
 
-        return sum((UnivariateKnotPolynomial({power1: 1}) * disjoint_unknot_poly**(power2-1) for power1, power2 in newlist), UnivariateKnotPolynomial.additive_identity())
+        return sum((KnotPoly({power1: 1}) * disjoint_unknot_poly**(power2-1) for power1, power2 in newlist), KnotPoly.additive_identity())
     
     def get_writhe(self) -> int:
         writhe = 0
@@ -157,12 +157,12 @@ class Diagram:
         return writhe
 
     # Return the Jones polynomial of a diagram.
-    def get_jones_polynomial(self) -> UnivariateKnotPolynomial:
+    def get_jones_polynomial(self) -> KnotPoly:
         writhe = self.get_writhe()
         kauffman_bracket = self.get_kauffman_bracket()
-        raw_jones_polynomial = kauffman_bracket * UnivariateKnotPolynomial({-3*writhe: 1 if writhe % 2 == 0 else -1})
+        raw_jones_polynomial = kauffman_bracket * KnotPoly({-3*writhe: 1 if writhe % 2 == 0 else -1})
         coefficients = {-powers[0]/4: coefficients for powers, coefficients in raw_jones_polynomial.coefficients.items()}
-        return UnivariateKnotPolynomial(coefficients)
+        return KnotPoly(coefficients)
 
     # Readjust the edge values of `diagram` with the expectation of a twist at `target_edge`.
     def _prepare_twist(self, target_edge: Edge) -> PDNotation:
