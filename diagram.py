@@ -7,6 +7,9 @@ Edge = int
 Crossing = tuple[Edge, Edge, Edge, Edge]
 PDNotation = list[Crossing]
 
+def _shift_edge(edge: Edge, n: int, mod: int) -> Edge:
+    return (edge + n - 1) % mod + 1
+
 class Diagram:
     def __init__(self, pd_code):
         self.pd_code: PDNotation = pd_code
@@ -43,14 +46,11 @@ class Diagram:
     # Return the Dowker-Thistlethwait notation of a diagram.
     def get_dt_notation(self) -> list[int]:
         raise NotImplemented
-    
-    def shiftmod(self, edge: Edge, n: int) -> Edge:
-        return (edge + n - 1) % len(self.pd_code) + 1
 
     # Return a diagram with all of its edge values shifted up by `n`.
     def shift(self, n: int) -> Diagram:
         mod = 2 * len(self.pd_code)
-        return Diagram([tuple(self.shiftmod(edge, n) for edge in crossing) for crossing in self.pd_code])
+        return Diagram([tuple(_shift_edge(edge, n, mod) for edge in crossing) for crossing in self.pd_code])
 
     # Return a diagram with all of its edge values shifted up by `n` without wrapping around.
     # This method is meant for adjusting a diagram to be combined with another.
@@ -148,7 +148,7 @@ class Diagram:
     def get_writhe(self) -> int:
         writhe = 0
         for _, b, _, d in self.pd_code:
-            if self.shiftmod(b, 1) == d:
+            if _shift_edge(b, 1, 2*len(self.pd_code)) == d:
                 writhe += 1
             else:
                 writhe -= 1
@@ -174,7 +174,7 @@ class Diagram:
                 # If a given edge comes after the target edge, add two.
                 # If it is the target edge, leave it alone if it connects with the
                 #   previous edge or add two if it connects with the next edge.
-                if edge < target_edge or edge == target_edge and self.shiftmod(edge, -1) in crossing:
+                if edge < target_edge or edge == target_edge and _shift_edge(edge, -1, len(self.pd_code)) in crossing:
                     new_crossing_as_list.append(edge)
                 else:
                     new_crossing_as_list.append(edge + 2)
