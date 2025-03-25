@@ -25,11 +25,11 @@ def knot(crossings: int, index: int, alt_status: str = ''):
 
     str_ns = raw_pd.replace('[', '').replace(']', '').strip().split(';')
     ns = list(map(int, str_ns))
-    pd = set()
+    pd_code = []
     for i in range(int(len(ns)/4)):
-        pd.add(
+        pd_code.append(
             (ns[4*i], ns[4*i+1], ns[4*i+2], ns[4*i+3]))
-    return Diagram(pd)
+    return Diagram(pd_code)
 
 # https://en.m.wikipedia.org/wiki/File:Thistlethwaite_unknot.svg
 THISTLETHWAITE_UNKNOT = Diagram([
