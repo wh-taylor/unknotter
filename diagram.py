@@ -7,9 +7,6 @@ Edge = int
 Crossing = tuple[Edge, Edge, Edge, Edge]
 PDNotation = list[Crossing]
 
-def _shift_edge(edge: Edge, n: int, mod: int) -> Edge:
-    return (edge + n - 1) % mod + 1
-
 class Diagram:
     def __init__(self, pd_code):
         self.pd_code: PDNotation = pd_code
