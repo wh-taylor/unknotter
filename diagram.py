@@ -72,9 +72,7 @@ class Diagram:
     # Return true if and only if all edge values of both diagrams are completely identical.
     def identical(self, other: Diagram) -> bool:
         if len(self.pd_code) != len(other.pd_code): return False
-        return all(self.pd_code[i][j] == other.pd_code[i][j]
-            for i in range(len(self.pd_code))
-            for j in range(4))
+        return set(self.pd_code) == set(other.pd_code)
 
     # Check if a diagram is equivalent to another considering orientation.
     def __eq__(self, diagram2: Diagram):
