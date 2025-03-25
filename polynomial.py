@@ -5,7 +5,7 @@ class KnotPoly:
         # If `coefficients` uses integer powers instead of tuple powers,
         # we want to force it into tuple powers.
         corrected_coefficients: dict[tuple[int, ...], int] = {}
-        if all(isinstance(key, int) for key in coefficients):
+        if all(isinstance(key, int) or isinstance(key, float) for key in coefficients):
             corrected_coefficients = {(power,): coefficient for power, coefficient in coefficients.items()}
         else:
             corrected_coefficients = coefficients
