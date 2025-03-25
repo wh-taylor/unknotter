@@ -4,6 +4,7 @@ from math import prod
 from polynomial import *
 
 Edge = int
+SignedEdge = int
 Crossing = tuple[Edge, Edge, Edge, Edge]
 PDNotation = list[Crossing]
 
@@ -18,8 +19,17 @@ class Diagram:
     def _get_crossings_with_edge(self, edge: Edge) -> list[Crossing]:
         return [crossing for crossing in self.pd_code if edge in crossing]
     
+    # Shift an edge by a given amount, wrapping around the number of edges.
     def _shiftmod(self, edge: Edge, n: int) -> Edge:
         return (edge + n - 1) % (2*len(self.pd_code)) + 1
+    
+    # Get the edge after a given edge (+1 with wraparound).
+    def _next(self, edge: Edge) -> Edge:
+        return self._shiftmod(edge, 1)
+    
+    # Get the edge before a given edge (-1 with wraparound).
+    def _prev(self, edge: Edge) -> Edge:
+        return self._shiftmod(edge, -1)
     
     # Given the index of an edge, get the index of its friend.
     # Say we have two crossings: (_, _, _, 2), (_, _, 2, _).
@@ -41,11 +51,11 @@ class Diagram:
     
     # Return the Gauss code of a diagram.
     def get_gauss_code(self) -> list[int]:
-        raise NotImplemented
+        raise NotImplementedError
 
     # Return the Dowker-Thistlethwait notation of a diagram.
     def get_dt_notation(self) -> list[int]:
-        raise NotImplemented
+        raise NotImplementedError
 
     # Return a diagram with all of its edge values shifted up by `n`.
     def shift(self, n: int) -> Diagram:
@@ -91,11 +101,11 @@ class Diagram:
 
     # Return the disjoint union of two diagrams.
     def disjoint_union(self) -> Diagram:
-        raise NotImplemented
+        raise NotImplementedError
 
     # Return the joining of two diagrams by given edges (generalizes connected sum).
     def join(self, other: Diagram, self_edge: Edge, other_edge: Edge) -> Diagram:
-        raise NotImplemented
+        raise NotImplementedError
 
     # Return the Kauffman bracket of a diagram.
     def get_kauffman_bracket(self) -> KnotPoly:
@@ -147,7 +157,7 @@ class Diagram:
     def get_writhe(self) -> int:
         writhe = 0
         for _, b, _, d in self.pd_code:
-            if self._shiftmod(b, 1) == d:
+            if self._next(b) == d:
                 writhe += 1
             else:
                 writhe -= 1
@@ -173,7 +183,7 @@ class Diagram:
                 # If a given edge comes after the target edge, add two.
                 # If it is the target edge, leave it alone if it connects with the
                 #   previous edge or add two if it connects with the next edge.
-                if edge < target_edge or edge == target_edge and self._shiftmod(edge, -1) in crossing:
+                if edge < target_edge or edge == target_edge and self._prev(edge) in crossing:
                     new_crossing_as_list.append(edge)
                 else:
                     new_crossing_as_list.append(edge + 2)
@@ -197,6 +207,57 @@ class Diagram:
     # Twist `target_edge`.
     def twist(self, target_edge: Edge, is_positive: bool = True) -> Diagram:
         return self._postwist(target_edge) if is_positive else self._negtwist(target_edge)
+    
+    # Returns whether or not the given index represents an edge that is facing its crossing.
+    def index_is_facing(self, crossing_index: int, edge_index: int) -> bool:
+        if edge_index == 0: return True
+        if edge_index == 1:
+            return self.pd_code[crossing_index][3] == self._next(self.pd_code[crossing_index][1])
+        if edge_index == 3:
+            return self.pd_code[crossing_index][1] == self._next(self.pd_code[crossing_index][3])
+
+    # Get the index of the given edge in the crossing it faces toward.
+    # Note: the edge index is never 2, since the edge would then be
+    # facing away from the crossing.
+    def get_forth_index(self, edge: Edge) -> tuple[int, int]:
+        for crossing_index, crossing in enumerate(self.pd_code):
+            if crossing[0] == edge:
+                return crossing_index, 0
+            if crossing[1] == edge and crossing[3] == self._next(edge):
+                return crossing_index, 1
+            if crossing[3] == edge and crossing[1] == self._next(edge):
+                return crossing_index, 3
+        raise NotImplementedError
+    
+    # Get the two faces adjacent to the given edge.
+    # Following the direction the given edge is pointing, two faces can be extracted.
+    # One by only going counterclockwise and one by only going clockwise.
+    # Each face is given as a list of edges that are signed. Since we generate faces
+    # based on a specific direction, the edge is negative if it goes against the direction
+    # of the path we follow in generating the face.
+    def get_adjacent_faces(self, edge: Edge) -> tuple[list[SignedEdge], list[SignedEdge]]:
+        face_ccw: list[SignedEdge] = [edge]
+        face_cw: list[SignedEdge] = [edge]
+
+        # Generate the counterclockwise face.
+        crossing_index, edge_index = self.get_forth_index(edge)
+        edge_index = (edge_index - 1) % 4
+        while self.pd_code[crossing_index][edge_index] != edge:
+            sign = -1 if self.index_is_facing(crossing_index, edge_index) else 1
+            face_ccw.append(sign * self.pd_code[crossing_index][edge_index])
+            crossing_index, edge_index = self._get_friend_index(crossing_index, edge_index)
+            edge_index = (edge_index - 1) % 4
+        
+        # Generate the clockwise face.
+        crossing_index, edge_index = self.get_forth_index(edge)
+        edge_index = (edge_index + 1) % 4
+        while self.pd_code[crossing_index][edge_index] != edge:
+            sign = -1 if self.index_is_facing(crossing_index, edge_index) else 1
+            face_cw.append(sign * self.pd_code[crossing_index][edge_index])
+            crossing_index, edge_index = self._get_friend_index(crossing_index, edge_index)
+            edge_index = (edge_index + 1) % 4
+
+        return (face_ccw, face_cw)
 
     # Readjust the edge values of `diagram` with the expectation of a poke between the two edges.
     def _prepare_poke(self, lower_edge: Edge, higher_edge: Edge) -> PDNotation:
@@ -215,11 +276,11 @@ class Diagram:
                 #   edge or add four if it connects with the next edge.
                 should_add_none = (
                     edge < lower_edge or
-                    edge == lower_edge and edge - 1 in crossing)
+                    edge == lower_edge and self._prev(edge) in crossing)
                 should_add_two = (
                     edge == lower_edge or
                     lower_edge < edge < higher_edge or
-                    edge == higher_edge and edge - 1 in crossing)
+                    edge == higher_edge and self._prev(edge) in crossing)
 
                 if should_add_none:
                     new_crossing_as_list.append(edge)
@@ -238,15 +299,28 @@ class Diagram:
         lower_edge = min(under_edge, over_edge)
         higher_edge = max(under_edge, over_edge)
 
-        pd_code: PDNotation = self._prepare_poke(lower_edge, higher_edge)
+        face_ccw, face_cw = self.get_adjacent_faces(lower_edge)
+
+        if not (higher_edge in face_cw or -higher_edge in face_cw or higher_edge in face_ccw or -higher_edge in face_ccw):
+            raise ValueError("can only poke edges along the same face.")
+
+        pd_code = self._prepare_poke(lower_edge, higher_edge)
         
         # Add the two new crossings.
-        if under_edge == lower_edge:
-            pd_code.append((lower_edge, higher_edge + 2, lower_edge + 1, higher_edge + 3))
-            pd_code.append((lower_edge + 1, higher_edge + 4, lower_edge + 2, higher_edge + 3))
+        if -higher_edge in face_cw:
+            if under_edge == lower_edge:
+                pd_code.append((lower_edge, higher_edge + 2, lower_edge + 1, higher_edge + 3))
+                pd_code.append((lower_edge + 1, higher_edge + 4, lower_edge + 2, higher_edge + 3))
+            else:
+                pd_code.append((higher_edge + 2, lower_edge + 1, higher_edge + 3, lower_edge))
+                pd_code.append((higher_edge + 3, lower_edge + 1, higher_edge + 4, lower_edge + 2))
         else:
-            pd_code.append((higher_edge + 2, lower_edge + 1, higher_edge + 3, lower_edge))
-            pd_code.append((higher_edge + 3, lower_edge + 1, higher_edge + 4, lower_edge + 2))
+            if under_edge == lower_edge:
+                pd_code.append((lower_edge, higher_edge + 3, lower_edge + 1, higher_edge + 2))
+                pd_code.append((lower_edge + 1, higher_edge + 3, lower_edge + 2, higher_edge + 4))
+            else:
+                pd_code.append((higher_edge + 2, lower_edge, higher_edge + 3, lower_edge + 1))
+                pd_code.append((higher_edge + 3, lower_edge + 2, higher_edge + 4, lower_edge + 1))
 
         return Diagram(pd_code)
 
