@@ -21,6 +21,9 @@ class Diagram:
     def _get_crossings_with_edge(self, edge: Edge) -> list[Crossing]:
         return [crossing for crossing in self.pd_code if edge in crossing]
     
+    def _shiftmod(self, edge: Edge, n: int) -> Edge:
+        return (edge + n - 1) % (2*len(self.pd_code)) + 1
+    
     # Given the index of an edge, get the index of its friend.
     # Say we have two crossings: (_, _, _, 2), (_, _, 2, _).
     # The first 2 is in the first crossing in the fourth position, so it has the index (1, 4).
@@ -49,8 +52,7 @@ class Diagram:
 
     # Return a diagram with all of its edge values shifted up by `n`.
     def shift(self, n: int) -> Diagram:
-        mod = 2 * len(self.pd_code)
-        return Diagram([tuple(_shift_edge(edge, n, mod) for edge in crossing) for crossing in self.pd_code])
+        return Diagram([tuple(self._shiftmod(edge, n) for edge in crossing) for crossing in self.pd_code])
 
     # Return a diagram with all of its edge values shifted up by `n` without wrapping around.
     # This method is meant for adjusting a diagram to be combined with another.
@@ -148,7 +150,7 @@ class Diagram:
     def get_writhe(self) -> int:
         writhe = 0
         for _, b, _, d in self.pd_code:
-            if _shift_edge(b, 1, 2*len(self.pd_code)) == d:
+            if self._shiftmod(b, 1) == d:
                 writhe += 1
             else:
                 writhe -= 1
@@ -174,7 +176,7 @@ class Diagram:
                 # If a given edge comes after the target edge, add two.
                 # If it is the target edge, leave it alone if it connects with the
                 #   previous edge or add two if it connects with the next edge.
-                if edge < target_edge or edge == target_edge and _shift_edge(edge, -1, len(self.pd_code)) in crossing:
+                if edge < target_edge or edge == target_edge and self._shiftmod(edge, -1) in crossing:
                     new_crossing_as_list.append(edge)
                 else:
                     new_crossing_as_list.append(edge + 2)
