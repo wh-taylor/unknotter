@@ -189,11 +189,13 @@ class Diagram:
     def _postwist(self, target_edge: Edge) -> Diagram:
         pd_code = self._prepare_twist(target_edge)
         pd_code.append((target_edge + 1, target_edge + 1, target_edge + 2, target_edge))
+        return Diagram(pd_code)
 
     # Apply a negative twist on `target_edge`.
     def _negtwist(self, target_edge: Edge) -> Diagram:
         pd_code = self._prepare_twist(target_edge)
         pd_code.append((target_edge, target_edge + 1, target_edge + 1, target_edge + 2))
+        return Diagram(pd_code)
 
     # Twist `target_edge`.
     def twist(self, target_edge: Edge, is_positive: bool = True) -> Diagram:
