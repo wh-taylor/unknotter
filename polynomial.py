@@ -80,9 +80,6 @@ class KnotPoly:
             p *= self
         return p
     
-    def get_coefficient_from_power(self, power: int):
-        return self.coefficients[power]
-    
     def var(self, *vars: str) -> str:
         if len(vars) != self.n_vars:
             raise ValueError(f"expected {self.n_vars} variables, received {len(vars)}: {', '.join(vars)}")
