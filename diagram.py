@@ -113,7 +113,7 @@ class Diagram:
 
         factored_poly = [(((a, d), (b, c)), ((a, b), (c, d))) for a, b, c, d in self.pd_code]
 
-        distributed_poly = [(3-2*sum(ii), [factor for term in terms for factor in term]) for ii, terms in zip(product(*(range(len(x)) for x in factored_poly)), product(*factored_poly))]
+        distributed_poly = [(sum(1-2*i for i in ii), [factor for term in terms for factor in term]) for ii, terms in zip(product(*(range(2) for _ in factored_poly)), product(*factored_poly))]
 
         for power, term in distributed_poly:
             matched_at_all = True
@@ -148,27 +148,27 @@ class Diagram:
                         j += 1
                     i += 1
 
-        newlist = [(power, len(term)) for power, term in distributed_poly]
+        newlist = [(power, len(term)-1) for power, term in distributed_poly]
 
         disjoint_unknot_poly = KnotPoly({2: -1, -2: -1})
 
-        return sum((KnotPoly({power1: 1}) * disjoint_unknot_poly**(power2-1) for power1, power2 in newlist), KnotPoly.zero())
+        return sum((KnotPoly({power1: 1}) * disjoint_unknot_poly**power2 for power1, power2 in newlist), KnotPoly.zero())
     
     def get_writhe(self) -> int:
         writhe = 0
         for _, b, _, d in self.pd_code:
             if self._next(b) == d:
-                writhe += 1
-            else:
                 writhe -= 1
+            else:
+                writhe += 1
         return writhe
 
     # Return the Jones polynomial of a diagram.
     def get_jones_polynomial(self) -> KnotPoly:
         writhe = self.get_writhe()
         kauffman_bracket = self.get_kauffman_bracket()
-        raw_jones_polynomial = kauffman_bracket * KnotPoly({-3*writhe: 1 if writhe % 2 == 0 else -1})
-        coefficients = {-powers[0]/4: coefficients for powers, coefficients in raw_jones_polynomial.coefficients.items()}
+        raw_jones_polynomial = kauffman_bracket * KnotPoly({3*writhe: 1 if writhe % 2 == 0 else -1})
+        coefficients = {powers[0]/4: coefficients for powers, coefficients in raw_jones_polynomial.coefficients.items()}
         return KnotPoly(coefficients)
 
     # Readjust the edge values of `diagram` with the expectation of a twist at `target_edge`.
