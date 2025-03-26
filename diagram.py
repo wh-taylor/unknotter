@@ -298,6 +298,10 @@ class Diagram:
 
     # Poke `under_edge` underneath `over_edge`.
     def poke(self, under_edge: Edge, over_edge: Edge) -> Diagram:
+        # Disallow poking an edge under itself.
+        if under_edge == over_edge:
+            raise ReidemeisterError("cannot poke an edge underneath iteself.")
+
         # Handle infinity unknots as special cases.
         if self == Diagram([(1, 2, 2, 1)]):
             if under_edge == 1 and over_edge == 2:
