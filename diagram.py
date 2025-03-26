@@ -298,6 +298,18 @@ class Diagram:
 
     # Poke `under_edge` underneath `over_edge`.
     def poke(self, under_edge: Edge, over_edge: Edge) -> Diagram:
+        # Handle infinity unknots as special cases.
+        if self == Diagram([(1, 2, 2, 1)]):
+            if under_edge == 1 and over_edge == 2:
+                return Diagram([(1, 4, 2, 5), (2, 6, 3, 5), (3, 6, 4, 1)])
+            else:
+                return Diagram([(4, 2, 5, 1), (5, 2, 6, 3), (3, 6, 4, 1)])
+        elif self == Diagram([(2, 2, 1, 1)]):
+            if under_edge == 1 and over_edge == 2:
+                return Diagram([(1, 4, 2, 5), (2, 6, 3, 5), (6, 4, 1, 3)])
+            else:
+                return Diagram([(4, 2, 5, 1), (5, 2, 6, 3), (6, 4, 1, 3)])
+        
         lower_edge = min(under_edge, over_edge)
         higher_edge = max(under_edge, over_edge)
 

@@ -41,3 +41,15 @@ class TestPoke(unittest.TestCase):
         self.assertEqual(knot(3, 1).poke(2, 4), Diagram([
             (1, 9, 2, 8), (5, 1, 6, 10), (9, 5, 10, 4), (2, 7, 3, 8), (3, 7, 4, 6)
         ]))
+    
+    def test_infinity_unknot(self):
+        self.assertEqual(
+            Diagram([(1, 2, 2, 1)]).poke(1, 2),
+            Diagram([(1, 4, 2, 5), (2, 6, 3, 5), (3, 6, 4, 1)])
+        )
+    
+    def test_infinity_unknot_2(self):
+        self.assertEqual(
+            Diagram([(1, 1, 2, 2)]).poke(2, 1),
+            Diagram([(4, 2, 5, 1), (5, 2, 6, 3), (6, 4, 1, 3)])
+        )
