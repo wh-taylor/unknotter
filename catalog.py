@@ -1,35 +1,44 @@
-from diagram import Diagram
+from diagram import Diagram, PDNotation
+from itertools import islice
 
 # Initialize pre-defined prime knot knot diagrams
-_knot_catalog = {}
+_knot_catalog: dict[str, str] = {}
 with open('knotinfo.csv') as f:
     for line in f.readlines():
         parts = line.split(',')
         name, raw_pd = parts[0], parts[1]
         _knot_catalog[name] = raw_pd
 
-def knot(crossings: int, index: int, alt_status: str = ''):
+def _raw_pd_to_pd(raw_pd: str) -> PDNotation:
+    str_ns = raw_pd.replace('[', '').replace(']', '').strip().split(';')
+    if str_ns == ['']: return [] # Handle the unknot (no crossings)
+    ns = list(map(int, str_ns))
+    pd_code = []
+    for i in range(int(len(ns)/4)):
+        pd_code.append(
+            (ns[4*i], ns[4*i+1], ns[4*i+2], ns[4*i+3]))
+    return pd_code
+
+def knot(crossings: int, index: int, alt_status: str = '') -> Diagram:
     if alt_status == '' and crossings > 10:
         raise KeyError("knots with greater than 10 crossings require an argument 'a' or 'n'.")
     if alt_status != '' and crossings <= 10:
         raise KeyError("knots with crossings 10 or fewer are not distinguished by alternating or non-alternating.")
 
     name = f'{crossings}{alt_status}_{index}'
-
-    if name == '0_1': return Diagram([])
     
     try:
         raw_pd = _knot_catalog[name]
     except KeyError:
         raise KeyError(f"knot {name} does not exist.")
 
-    str_ns = raw_pd.replace('[', '').replace(']', '').strip().split(';')
-    ns = list(map(int, str_ns))
-    pd_code = []
-    for i in range(int(len(ns)/4)):
-        pd_code.append(
-            (ns[4*i], ns[4*i+1], ns[4*i+2], ns[4*i+3]))
-    return Diagram(pd_code)
+    return Diagram(_raw_pd_to_pd(raw_pd))
+
+# Generator of all prime knot diagrams in the catalog.
+KNOTS = ((name, Diagram(_raw_pd_to_pd(value))) for name, value in _knot_catalog.items())
+
+def first_n_knots(n: int) -> list[tuple[str, Diagram]]:
+    return islice(KNOTS, n)
 
 # https://en.m.wikipedia.org/wiki/File:Thistlethwaite_unknot.svg
 THISTLETHWAITE_UNKNOT = Diagram([
