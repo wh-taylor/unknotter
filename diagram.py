@@ -316,13 +316,27 @@ class Diagram:
             else:
                 pd_code.append((higher_edge + 2, lower_edge + 1, higher_edge + 3, lower_edge))
                 pd_code.append((higher_edge + 3, lower_edge + 1, higher_edge + 4, lower_edge + 2))
-        else:
+        elif -higher_edge in face_ccw:
             if under_edge == lower_edge:
                 pd_code.append((lower_edge, higher_edge + 3, lower_edge + 1, higher_edge + 2))
                 pd_code.append((lower_edge + 1, higher_edge + 3, lower_edge + 2, higher_edge + 4))
             else:
                 pd_code.append((higher_edge + 2, lower_edge, higher_edge + 3, lower_edge + 1))
                 pd_code.append((higher_edge + 3, lower_edge + 2, higher_edge + 4, lower_edge + 1))
+        elif higher_edge in face_cw:
+            if under_edge == lower_edge:
+                pd_code.append((lower_edge, higher_edge + 4, lower_edge + 1, higher_edge + 3))
+                pd_code.append((lower_edge + 1, higher_edge + 2, lower_edge + 2, higher_edge + 3))
+            else:
+                pd_code.append((higher_edge + 2, lower_edge + 1, higher_edge + 3, lower_edge + 2))
+                pd_code.append((higher_edge + 3, lower_edge + 1, higher_edge + 4, lower_edge))
+        elif higher_edge in face_ccw:
+            if under_edge == lower_edge:
+                pd_code.append((lower_edge, higher_edge + 3, lower_edge + 1, higher_edge + 4))
+                pd_code.append((lower_edge + 1, higher_edge + 3, lower_edge + 2, higher_edge + 2))
+            else:
+                pd_code.append((higher_edge + 2, lower_edge + 2, higher_edge + 3, lower_edge + 1))
+                pd_code.append((higher_edge + 3, lower_edge, higher_edge + 4, lower_edge + 1))
 
         return Diagram(pd_code)
     
@@ -351,7 +365,6 @@ class Diagram:
         ))
 
     # Slide an edge over the face formed by the three given edges.
-    # TODO: raise an exception if a slide is not possible (not in one face, incorrect crossing).
     def slide(self, edge1: Edge, edge2: Edge, edge3: Edge) -> Diagram:
         edges = [edge1, edge2, edge3]
 

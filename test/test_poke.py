@@ -36,3 +36,8 @@ class TestPoke(unittest.TestCase):
         self.assertEqual(trefoil.poke(6, 3), Diagram([
             (2, 7, 3, 8), (3, 9, 4, 8), (4, 9, 5, 10), (6, 1, 7, 2), (10, 5, 1, 6)
         ]))
+    
+    def test_trefoil_triangle_2_4(self):
+        self.assertEqual(knot(3, 1).poke(2, 4), Diagram([
+            (1, 9, 2, 8), (5, 1, 6, 10), (9, 5, 10, 4), (2, 7, 3, 8), (3, 7, 4, 6)
+        ]))
