@@ -182,6 +182,14 @@ class Diagram:
     def get_twistables(self) -> list[Edge]:
         return self.get_edges()
     
+    # Return the list of edges that can be untwisted.
+    def get_untwistables(self) -> list[Edge]:
+        untwistables = []
+        for crossing in self.pd_code:
+            if len(set(crossing)) == 3:
+                untwistables.append(max(set(crossing), key=crossing.count))
+        return untwistables
+    
     # Return the list of (ordered) pairs of edges that can be poked.
     def get_pokables(self) -> list[tuple[Edge, Edge]]:
         pokables = []
@@ -244,6 +252,18 @@ class Diagram:
     # Twist `target_edge`.
     def twist(self, target_edge: Edge, is_positive: bool = True) -> Diagram:
         return self._postwist(target_edge) if is_positive else self._negtwist(target_edge)
+    
+    # Remove the twist adjacent to the given edge.
+    def untwist(self, edge: Edge) -> Diagram:
+        pd_code: PDNotation = self.pd_code.copy()
+        for i, crossing in enumerate(pd_code):
+            if crossing.count(edge) == 2:
+                del pd_code[i]
+                break
+        else:
+            raise ReidemeisterError("given edge is not on a twist, so it cannot be untwisted.")
+        pd_code = [tuple(e - 2 if e > edge else e for e in crossing) for crossing in pd_code]
+        return Diagram(pd_code)
     
     # Returns whether or not the given index represents an edge that is facing its crossing.
     def index_is_facing(self, crossing_index: int, edge_index: int) -> bool:
