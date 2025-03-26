@@ -8,6 +8,9 @@ SignedEdge = int
 Crossing = tuple[Edge, Edge, Edge, Edge]
 PDNotation = list[Crossing]
 
+class ReidemeisterError(Exception):
+    pass
+
 class Diagram:
     def __init__(self, pd_code):
         self.pd_code: PDNotation = pd_code
@@ -301,7 +304,7 @@ class Diagram:
         face_ccw, face_cw = self.get_adjacent_faces(lower_edge)
 
         if not (higher_edge in face_cw or -higher_edge in face_cw or higher_edge in face_ccw or -higher_edge in face_ccw):
-            raise ValueError("can only poke edges along the same face.")
+            raise ReidemeisterError("can only poke edges along the same face.")
 
         pd_code = self._prepare_poke(lower_edge, higher_edge)
         
@@ -322,14 +325,47 @@ class Diagram:
                 pd_code.append((higher_edge + 3, lower_edge + 2, higher_edge + 4, lower_edge + 1))
 
         return Diagram(pd_code)
+    
+    # An edge is closed if, on both of the crossings it connects to, it crosses underneath.
+    def is_closed(self, edge: Edge) -> bool:
+        adj_crossings = [crossing for crossing in self.pd_code if edge in crossing]
+        return edge in [adj_crossings[0][0], adj_crossings[0][2]] and edge in [adj_crossings[1][0], adj_crossings[1][2]]
+    
+    # An edge is open if, on both of the crossings it connects to, it crosses over.
+    def is_open(self, edge: Edge) -> bool:
+        adj_crossings = [crossing for crossing in self.pd_code if edge in crossing]
+        return (edge in [adj_crossings[0][1], adj_crossings[0][3]]) and (edge in [adj_crossings[1][1], adj_crossings[1][3]])
+    
+    # An edge is half-open if it crosses over one of its crossings and under the other.
+    def is_half_open(self, edge: Edge) -> bool:
+        return not self.is_open(edge) and not self.is_closed(edge)
+
+    def is_slidable(self, edge1: Edge, edge2: Edge, edge3: Edge) -> bool:
+        return any((
+            self.is_open(edge1) and self.is_closed(edge2) and self.is_half_open(edge3),
+            self.is_open(edge1) and self.is_closed(edge3) and self.is_half_open(edge2),
+            self.is_open(edge2) and self.is_closed(edge1) and self.is_half_open(edge3),
+            self.is_open(edge2) and self.is_closed(edge3) and self.is_half_open(edge2),
+            self.is_open(edge3) and self.is_closed(edge1) and self.is_half_open(edge2),
+            self.is_open(edge3) and self.is_closed(edge2) and self.is_half_open(edge1),
+        ))
 
     # Slide an edge over the face formed by the three given edges.
     # TODO: raise an exception if a slide is not possible (not in one face, incorrect crossing).
     def slide(self, edge1: Edge, edge2: Edge, edge3: Edge) -> Diagram:
+        edges = [edge1, edge2, edge3]
+
+        # Check if edges all lie on the same face
+        face_ccw, face_cw = self.get_adjacent_faces(edge1)
+        if not (all(edge in face_ccw or -edge in face_ccw for edge in edges) and len(face_ccw) == 3 or all(edge in face_cw or -edge in face_cw for edge in edges) and len(face_cw) == 3):
+            raise ReidemeisterError("can only slide three edges along the same face.")
+        
+        # Check if edges are layered properly
+        if not self.is_slidable(edge1, edge2, edge3):
+            raise ReidemeisterError("given edges do not follow the correct pattern for a slide.")
+
         # Initialize three crossings to be updated while iterating over the relevant crossings.
         pd_code = [[0, 0, 0, 0] for _ in range(len(self.pd_code))]
-        # Get the three crossings connecting the three edges.
-        edges = [edge1, edge2, edge3]
 
         # Map over each edge in each relevant crossing by index.
         # The crossing index is the index of a crossing in the PD notation as a list.
