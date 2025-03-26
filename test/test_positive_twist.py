@@ -1,7 +1,4 @@
-import unittest
-from catalog import *
-from diagram import Diagram
-from polynomial import KnotPoly
+from test.__init__ import *
 
 trefoil = Diagram([
     (2, 5, 3, 6),
@@ -51,6 +48,3 @@ class TestPositiveTwist(unittest.TestCase):
         self.assertEqual(figure8.twist(1), Diagram(
             [(2, 2, 3, 1), (3, 8, 4, 9), (5, 1, 6, 10), (7, 4, 8, 5), (9, 7, 10, 6)]
         ))
-
-if __name__ == '__main__':
-    unittest.main()

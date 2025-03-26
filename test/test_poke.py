@@ -1,7 +1,4 @@
-import unittest
-from catalog import *
-from diagram import Diagram
-from polynomial import KnotPoly
+from test.__init__ import *
 
 trefoil = Diagram([
     (2, 5, 3, 6),
@@ -39,6 +36,3 @@ class TestPoke(unittest.TestCase):
         self.assertEqual(trefoil.poke(6, 3), Diagram([
             (2, 7, 3, 8), (3, 9, 4, 8), (4, 9, 5, 10), (6, 1, 7, 2), (10, 5, 1, 6)
         ]))
-
-if __name__ == '__main__':
-    unittest.main()
