@@ -203,6 +203,19 @@ class Diagram:
             pokables += ((edge, e) for e in pokable_with)
         return pokables
     
+    # Return the list of (ordered) pairs of edges that can be unpoked.
+    def get_unpokables(self) -> list[tuple[Edge, Edge]]:
+        unpokables = []
+        for edge in self.get_edges():
+            if any(edge in pair for pair in unpokables):
+                continue
+            face_ccw, face_cw = self.get_adjacent_faces(edge)
+            if len(face_ccw) == 2 and self.is_unpokable(*[abs(n) for n in face_ccw]):
+                    unpokables.append(tuple(sorted(abs(n) for n in face_ccw)))
+            if len(face_cw) == 2 and self.is_unpokable(*[abs(n) for n in face_cw]):
+                    unpokables.append(tuple(sorted(abs(n) for n in face_cw)))
+        return unpokables
+    
     # Return the list of (ordered) triplets of edges that can be slid.
     def get_slidables(self) -> list[tuple[Edge, Edge, Edge]]:
         slidables = []
@@ -410,6 +423,22 @@ class Diagram:
 
         return Diagram(pd_code)
     
+    # Remove the poke between the two given edges.
+    def unpoke(self, edge1: Edge, edge2: Edge) -> Diagram:
+        pd_code: PDNotation = []
+        deleted_crossings = 0
+        for i, crossing in enumerate(self.pd_code):
+            if edge1 in crossing and edge2 in crossing:
+                deleted_crossings += 1
+            else:
+                pd_code.append(crossing)
+        if deleted_crossings != 2:
+            raise ReidemeisterError("given edge is not on a poke, so it cannot be unpoked.")
+        lower_edge = min(edge1, edge2)
+        higher_edge = max(edge1, edge2)
+        pd_code = [tuple(e - 4 if e > higher_edge else e if e < lower_edge else e - 2 for e in crossing) for crossing in pd_code]
+        return Diagram(pd_code)
+    
     # An edge is closed if, on both of the crossings it connects to, it crosses underneath.
     def is_closed(self, edge: Edge) -> bool:
         adj_crossings = [crossing for crossing in self.pd_code if edge in crossing]
@@ -423,6 +452,12 @@ class Diagram:
     # An edge is half-open if it crosses over one of its crossings and under the other.
     def is_half_open(self, edge: Edge) -> bool:
         return not self.is_open(edge) and not self.is_closed(edge)
+    
+    def is_unpokable(self, edge1: Edge, edge2: Edge) -> bool:
+        return any((
+            self.is_open(edge1) and self.is_closed(edge2),
+            self.is_open(edge2) and self.is_closed(edge1),
+        ))
 
     def is_slidable(self, edge1: Edge, edge2: Edge, edge3: Edge) -> bool:
         return any((
