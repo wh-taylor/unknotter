@@ -12,39 +12,13 @@ class ReidemeisterError(Exception):
 class Diagram:
     def __init__(self, pd_code):
         self.pd_code: PDNotation = pd_code
+
+        from knotdiagram.operators import equals
+        self._equals = equals
     
     def __repr__(self) -> Diagram:
         return 'PD [ ' + ',\n     '.join('(' + ', '.join(str(e) for e in crossing) + ')' for crossing in self.pd_code) + ' ]'
     
-    # from knotdiagram.reidemeister import (
-    #     get_twistables,
-    #     get_untwistables,
-    #     get_pokables,
-    #     get_unpokables,
-    #     get_slidables,
-    #     twist,
-    #     untwist,
-    #     poke,
-    #     unpoke,
-    #     slide,
-    # )
+    def __eq__(self, other: Diagram) -> Diagram:
+        return self._equals(self, other)
 
-    # from knotdiagram.properties import (
-    #     get_kauffman_bracket,
-    #     get_jones_polynomial,
-    #     get_writhe,
-    #     get_edges,
-    # )
-
-    # from knotdiagram.operators import (
-    #     get_dt_notation,
-    #     get_gauss_code,
-    #     shift,
-    #     reverse,
-    #     reflect,
-    #     identical,
-    #     equals as __eq__,
-    #     is_congruent,
-    #     disjoint_union,
-    #     join,
-    # )
