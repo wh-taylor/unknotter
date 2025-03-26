@@ -173,6 +173,40 @@ class Diagram:
         raw_jones_polynomial = kauffman_bracket * KnotPoly({3*writhe: 1 if writhe % 2 == 0 else -1})
         coefficients = {powers[0]/4: coefficients for powers, coefficients in raw_jones_polynomial.coefficients.items()}
         return KnotPoly(coefficients)
+    
+    # Return the list of edges.
+    def get_edges(self) -> list[Edge]:
+        return [i + 1 for i in range(2 * len(self.pd_code))]
+    
+    # Return the list of edges that can be twisted (which is all of them).
+    def get_twistables(self) -> list[Edge]:
+        return self.get_edges()
+    
+    # Return the list of (ordered) pairs of edges that can be poked.
+    def get_pokables(self) -> list[tuple[Edge, Edge]]:
+        pokables = []
+        for edge in self.get_edges():
+            pokable_with = []
+            face_ccw, face_cw = self.get_adjacent_faces(edge)
+            for signed_edge in face_ccw + face_cw:
+                adj_edge = abs(signed_edge)
+                if adj_edge != edge and adj_edge not in pokable_with:
+                    pokable_with.append(adj_edge)
+            pokables += ((edge, e) for e in pokable_with)
+        return pokables
+    
+    # Return the list of (ordered) triplets of edges that can be slid.
+    def get_slidables(self) -> list[tuple[Edge, Edge, Edge]]:
+        slidables = []
+        for edge in self.get_edges():
+            if any(edge in triplet for triplet in slidables):
+                continue
+            face_ccw, face_cw = self.get_adjacent_faces(edge)
+            if len(face_ccw) == 3 and self.is_slidable(*[abs(n) for n in face_ccw]):
+                    slidables.append(tuple(sorted(abs(n) for n in face_ccw)))
+            if len(face_cw) == 3 and self.is_slidable(*[abs(n) for n in face_cw]):
+                    slidables.append(tuple(sorted(abs(n) for n in face_cw)))
+        return slidables
 
     # Readjust the edge values of `diagram` with the expectation of a twist at `target_edge`.
     def _prepare_twist(self, target_edge: Edge) -> PDNotation:
@@ -375,7 +409,7 @@ class Diagram:
             self.is_open(edge1) and self.is_closed(edge2) and self.is_half_open(edge3),
             self.is_open(edge1) and self.is_closed(edge3) and self.is_half_open(edge2),
             self.is_open(edge2) and self.is_closed(edge1) and self.is_half_open(edge3),
-            self.is_open(edge2) and self.is_closed(edge3) and self.is_half_open(edge2),
+            self.is_open(edge2) and self.is_closed(edge3) and self.is_half_open(edge1),
             self.is_open(edge3) and self.is_closed(edge1) and self.is_half_open(edge2),
             self.is_open(edge3) and self.is_closed(edge2) and self.is_half_open(edge1),
         ))
