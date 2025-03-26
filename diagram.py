@@ -294,7 +294,6 @@ class Diagram:
         return pd_code
 
     # Poke `under_edge` underneath `over_edge`.
-    # TODO: raise an exception if a poke is not possible (not in one face).
     def poke(self, under_edge: Edge, over_edge: Edge) -> Diagram:
         lower_edge = min(under_edge, over_edge)
         higher_edge = max(under_edge, over_edge)
@@ -328,31 +327,27 @@ class Diagram:
     # TODO: raise an exception if a slide is not possible (not in one face, incorrect crossing).
     def slide(self, edge1: Edge, edge2: Edge, edge3: Edge) -> Diagram:
         # Initialize three crossings to be updated while iterating over the relevant crossings.
-        new_crossings_mutable = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-
+        pd_code = [[0, 0, 0, 0] for _ in range(len(self.pd_code))]
         # Get the three crossings connecting the three edges.
-        relevant_crossings = list(set(
-            self._get_crossings_with_edge(edge1) +
-            self._get_crossings_with_edge(edge2) +
-            self._get_crossings_with_edge(edge3)))
+        edges = [edge1, edge2, edge3]
 
         # Map over each edge in each relevant crossing by index.
         # The crossing index is the index of a crossing in the PD notation as a list.
-        for crossing_index in range(3):
+        for crossing_index in range(len(self.pd_code)):
             # The edge index is the index of an edge in a crossing.
             for edge_index in range(4):
                 # Shift the relevant crossings down two. However, if the edge is one of the three edges forming the face of the slide, use the edge shifted down two from its friend instead.
                 # See `_get_friend_index` for the definition of a friend.
-                if relevant_crossings[crossing_index][edge_index] in [edge1, edge2, edge3]:
+                if any(edge in self.pd_code[crossing_index] for edge in edges) and self.pd_code[crossing_index][edge_index] in [edge1, edge2, edge3]:
                     friend_crossing_index, friend_edge_index = self._get_friend_index(crossing_index, edge_index)
-                    new_crossings_mutable[crossing_index][edge_index] = (
-                        relevant_crossings[friend_crossing_index][(friend_edge_index + 2) % 4])
+                    pd_code[crossing_index][edge_index] = (
+                        self.pd_code[friend_crossing_index][(friend_edge_index + 2) % 4]
+                    )
+                elif any(edge in self.pd_code[crossing_index] for edge in edges):
+                    pd_code[crossing_index][edge_index] = self.pd_code[crossing_index][(edge_index + 2) % 4]
                 else:
-                    new_crossings_mutable[crossing_index][edge_index] = (
-                        relevant_crossings[crossing_index][(edge_index + 2) % 4])
+                    pd_code[crossing_index][edge_index] = self.pd_code[crossing_index][edge_index]
         
-        new_crossings = [tuple(crossing) for crossing in new_crossings_mutable]
-
-        pd_code = [crossing for crossing in self.pd_code if crossing not in relevant_crossings] + new_crossings
+        pd_code = [tuple(crossing) for crossing in pd_code]
 
         return Diagram(pd_code)
