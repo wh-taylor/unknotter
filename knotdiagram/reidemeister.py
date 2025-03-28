@@ -2,17 +2,6 @@ import math
 import random
 from knotdiagram.diagram import *
 from knotdiagram.properties import get_edges
-from knotdiagram.utils import (
-    _get_adjacent_faces,
-    _get_forth_index,
-    _get_crossings_with_edge,
-    _get_friend_index,
-    _next,
-    _prev,
-    _is_closed,
-    _is_open,
-    _is_half_open
-)
 
 # Return the list of edges that can be twisted (which is all of them).
 def get_twistables(self: Diagram) -> list[Edge]:
@@ -31,7 +20,7 @@ def get_pokables(self: Diagram) -> list[tuple[Edge, Edge]]:
     pokables = []
     for edge in get_edges(self):
         pokable_with = []
-        face_ccw, face_cw = _get_adjacent_faces(self, edge)
+        face_ccw, face_cw = self._get_adjacent_faces(edge)
         for signed_edge in face_ccw + face_cw:
             adj_edge = abs(signed_edge)
             if adj_edge != edge and adj_edge not in pokable_with:
@@ -45,7 +34,7 @@ def get_unpokables(self: Diagram) -> list[tuple[Edge, Edge]]:
     for edge in get_edges(self):
         if any(edge in pair for pair in unpokables):
             continue
-        face_ccw, face_cw = _get_adjacent_faces(self, edge)
+        face_ccw, face_cw = self._get_adjacent_faces(edge)
         if len(face_ccw) == 2 and is_unpokable(self, *[abs(n) for n in face_ccw]):
                 unpokables.append(tuple(sorted(abs(n) for n in face_ccw)))
         if len(face_cw) == 2 and is_unpokable(self, *[abs(n) for n in face_cw]):
@@ -58,7 +47,7 @@ def get_slidables(self: Diagram) -> list[tuple[Edge, Edge, Edge]]:
     for edge in get_edges(self):
         if any(edge in triplet for triplet in slidables):
             continue
-        face_ccw, face_cw = _get_adjacent_faces(self, edge)
+        face_ccw, face_cw = self._get_adjacent_faces(edge)
         if len(face_ccw) == 3 and is_slidable(self, *[abs(n) for n in face_ccw]):
                 slidables.append(tuple(sorted(abs(n) for n in face_ccw)))
         if len(face_cw) == 3 and is_slidable(self, *[abs(n) for n in face_cw]):
@@ -77,7 +66,7 @@ def _prepare_twist(self: Diagram, target_edge: Edge) -> PDNotation:
             # If a given edge comes after the target edge, add two.
             # If it is the target edge, leave it alone if it connects with the
             #   previous edge or add two if it connects with the next edge.
-            if edge < target_edge or edge == target_edge and _prev(self, edge) in crossing:
+            if edge < target_edge or edge == target_edge and self._prev(edge) in crossing:
                 new_crossing_as_list.append(edge)
             else:
                 new_crossing_as_list.append(edge + 2)
@@ -131,11 +120,11 @@ def _prepare_poke(self: Diagram, lower_edge: Edge, higher_edge: Edge) -> PDNotat
             #   edge or add four if it connects with the next edge.
             should_add_none = (
                 edge < lower_edge or
-                edge == lower_edge and _prev(self, edge) in crossing)
+                edge == lower_edge and self._prev(edge) in crossing)
             should_add_two = (
                 edge == lower_edge or
                 lower_edge < edge < higher_edge or
-                edge == higher_edge and _prev(self, edge) in crossing)
+                edge == higher_edge and self._prev(edge) in crossing)
 
             if should_add_none:
                 new_crossing_as_list.append(edge)
@@ -169,7 +158,7 @@ def poke(self: Diagram, under_edge: Edge, over_edge: Edge) -> Diagram:
     lower_edge = min(under_edge, over_edge)
     higher_edge = max(under_edge, over_edge)
 
-    face_ccw, face_cw = _get_adjacent_faces(self, lower_edge)
+    face_ccw, face_cw = self._get_adjacent_faces(lower_edge)
 
     if not (higher_edge in face_cw or -higher_edge in face_cw or higher_edge in face_ccw or -higher_edge in face_ccw):
         raise ReidemeisterError("can only poke edges along the same face.")
@@ -226,18 +215,18 @@ def unpoke(self: Diagram, edge1: Edge, edge2: Edge) -> Diagram:
 
 def is_unpokable(self: Diagram, edge1: Edge, edge2: Edge) -> bool:
     return any((
-        _is_open(self, edge1) and _is_closed(self, edge2),
-        _is_open(self, edge2) and _is_closed(self, edge1),
+        self._is_open(edge1) and self._is_closed(edge2),
+        self._is_open(edge2) and self._is_closed(edge1),
     ))
 
 def is_slidable(self: Diagram, edge1: Edge, edge2: Edge, edge3: Edge) -> bool:
     return any((
-        _is_open(self, edge1) and _is_closed(self, edge2) and _is_half_open(self, edge3),
-        _is_open(self, edge1) and _is_closed(self, edge3) and _is_half_open(self, edge2),
-        _is_open(self, edge2) and _is_closed(self, edge1) and _is_half_open(self, edge3),
-        _is_open(self, edge2) and _is_closed(self, edge3) and _is_half_open(self, edge1),
-        _is_open(self, edge3) and _is_closed(self, edge1) and _is_half_open(self, edge2),
-        _is_open(self, edge3) and _is_closed(self, edge2) and _is_half_open(self, edge1),
+        self._is_open(edge1) and self._is_closed(edge2) and self._is_half_open(edge3),
+        self._is_open(edge1) and self._is_closed(edge3) and self._is_half_open(edge2),
+        self._is_open(edge2) and self._is_closed(edge1) and self._is_half_open(edge3),
+        self._is_open(edge2) and self._is_closed(edge3) and self._is_half_open(edge1),
+        self._is_open(edge3) and self._is_closed(edge1) and self._is_half_open(edge2),
+        self._is_open(edge3) and self._is_closed(edge2) and self._is_half_open(edge1),
     ))
 
 # Slide an edge over the face formed by the three given edges.
@@ -245,7 +234,7 @@ def slide(self: Diagram, edge1: Edge, edge2: Edge, edge3: Edge) -> Diagram:
     edges = [edge1, edge2, edge3]
 
     # Check if edges all lie on the same face
-    face_ccw, face_cw = _get_adjacent_faces(self, edge1)
+    face_ccw, face_cw = self._get_adjacent_faces(edge1)
     if not (all(edge in face_ccw or -edge in face_ccw for edge in edges) and len(face_ccw) == 3 or all(edge in face_cw or -edge in face_cw for edge in edges) and len(face_cw) == 3):
         raise ReidemeisterError("can only slide three edges along the same face.")
     
@@ -264,7 +253,7 @@ def slide(self: Diagram, edge1: Edge, edge2: Edge, edge3: Edge) -> Diagram:
             # Shift the relevant crossings down two. However, if the edge is one of the three edges forming the face of the slide, use the edge shifted down two from its friend instead.
             # See `_get_friend_index` for the definition of a friend.
             if any(edge in self.pd_code[crossing_index] for edge in edges) and self.pd_code[crossing_index][edge_index] in [edge1, edge2, edge3]:
-                friend_crossing_index, friend_edge_index = _get_friend_index(self, crossing_index, edge_index)
+                friend_crossing_index, friend_edge_index = self._get_friend_index(crossing_index, edge_index)
                 pd_code[crossing_index][edge_index] = (
                     self.pd_code[friend_crossing_index][(friend_edge_index + 2) % 4]
                 )

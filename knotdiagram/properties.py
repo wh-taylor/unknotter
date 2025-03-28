@@ -1,6 +1,5 @@
 from itertools import product
 from knotdiagram.diagram import *
-from knotdiagram.utils import _next
 
 # Return the Gauss code of a diagram.
 def get_gauss_code(self: Diagram) -> list[int]:
@@ -60,7 +59,7 @@ def get_kauffman_bracket(self: Diagram) -> KnotPoly:
 def get_writhe(self: Diagram) -> int:
     writhe = 0
     for _, b, _, d in self.pd_code:
-        if _next(self, b) == d:
+        if self._next(b) == d:
             writhe -= 1
         else:
             writhe += 1
