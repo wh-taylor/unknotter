@@ -4,17 +4,13 @@ from knotdiagram.diagram import *
 def _get_crossings_with_edge(self: Diagram, edge: Edge) -> list[Crossing]:
     return [crossing for crossing in self.pd_code if edge in crossing]
 
-# Shift an edge by a given amount, wrapping around the number of edges.
-def _shiftmod(self: Diagram, edge: Edge, n: int) -> Edge:
-    return (edge + n - 1) % (2*len(self.pd_code)) + 1
-
 # Get the edge after a given edge (+1 with wraparound).
 def _next(self: Diagram, edge: Edge) -> Edge:
-    return _shiftmod(self, edge, 1)
+    return self._shiftmod(edge, 1)
 
 # Get the edge before a given edge (-1 with wraparound).
 def _prev(self: Diagram, edge: Edge) -> Edge:
-    return _shiftmod(self, edge, -1)
+    return self._shiftmod(edge, -1)
 
 # Given the index of an edge, get the index of its friend.
 # Say we have two crossings: (_, _, _, 2), (_, _, 2, _).

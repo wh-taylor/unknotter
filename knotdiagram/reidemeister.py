@@ -1,3 +1,5 @@
+import math
+import random
 from knotdiagram.diagram import *
 from knotdiagram.properties import get_edges
 from knotdiagram.utils import (
@@ -274,3 +276,61 @@ def slide(self: Diagram, edge1: Edge, edge2: Edge, edge3: Edge) -> Diagram:
     pd_code = [tuple(crossing) for crossing in pd_code]
 
     return Diagram(pd_code)
+
+def apply_random_move(self: Diagram, beta: float) -> Diagram:
+    numerical_weights: list[float] = [
+        math.e**-beta,
+        math.e**beta,
+        math.e**(-2*beta),
+        math.e**(2*beta),
+        1
+    ]
+
+    twistables = get_twistables(self)
+    untwistables = get_untwistables(self)
+    pokables = get_pokables(self)
+    unpokables = get_unpokables(self)
+    slidables = get_slidables(self)
+
+    options = [twistables, untwistables, pokables, unpokables, slidables]
+
+    weights = [0 if len(l) == 0 else w for w, l in zip(numerical_weights, options)]
+
+    move_decision = random.choices([1, 2, 3, 4, 5], weights=weights)[0]
+
+    match move_decision:
+        case 1:
+            edge = random.choices(twistables)[0]
+            print('Twist', edge)
+            return twist(self, edge)
+        case 2:
+            edge = random.choices(untwistables)[0]
+            print('Untwist', edge)
+            return untwist(self, edge)
+        case 3:
+            edges = random.choices(pokables)[0]
+            print('Poke', *edges)
+            return poke(self, *edges)
+        case 4:
+            edges = random.choices(unpokables)[0]
+            print('Unpoke', *edges)
+            return unpoke(self, *edges)
+        case 5:
+            edges = random.choices(slidables)[0]
+            print('Slide', *edges)
+            return slide(self, *edges)
+
+def randomeister(self: Diagram, moves: int, beta: float) -> list[Diagram]:
+    diagrams: list[Diagram] = [self]
+    diagram = self
+    for _ in range(moves):
+        diagram = apply_random_move(diagram, beta)
+        diagrams.append(diagram)
+    return diagrams
+
+def unknot_solver(self: Diagram, beta: float):
+    diagram = self
+    while len(diagram.pd_code) > 2:
+        diagram = apply_random_move(diagram, beta)
+        print(len(diagram.pd_code), diagram)
+    print(diagram)
