@@ -81,6 +81,11 @@ class KnotPoly:
         return p
     
     def var(self, *vars: str) -> str:
+        """Display a knot polynomial using a specified representation of a variable.
+        
+        Knot polynomials are stored without any particular variable in mind, and so
+        one must be provided in order to display it.
+        """
         if len(vars) != self.n_vars:
             raise ValueError(f"expected {self.n_vars} variables, received {len(vars)}: {', '.join(vars)}")
         out = ''
@@ -105,6 +110,9 @@ class KnotPoly:
                         else:
                             out += str(power)
         return out
+    
+    def __repr__(self) -> str:
+        return self.var('_')
     
     def zero(n_vars: int = 1) -> KnotPoly:
         return KnotPoly({}, n_vars)

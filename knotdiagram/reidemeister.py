@@ -3,20 +3,20 @@ import random
 from knotdiagram.diagram import *
 from knotdiagram.properties import get_edges
 
-# Return the list of edges that can be twisted (which is all of them).
 def get_twistables(self: Diagram) -> list[Edge]:
+    """Return the list of edges that can be twisted (which is all of them)."""
     return get_edges(self)
 
-# Return the list of edges that can be untwisted.
 def get_untwistables(self: Diagram) -> list[Edge]:
+    """Return the list of edges that can be untwisted."""
     untwistables = []
     for crossing in self.pd_code:
         if len(set(crossing)) == 3:
             untwistables.append(max(set(crossing), key=crossing.count))
     return untwistables
 
-# Return the list of (ordered) pairs of edges that can be poked.
 def get_pokables(self: Diagram) -> list[tuple[Edge, Edge]]:
+    """Return the list of ordered pairs of edges that can be poked."""
     pokables = []
     for edge in get_edges(self):
         pokable_with = []
@@ -28,8 +28,8 @@ def get_pokables(self: Diagram) -> list[tuple[Edge, Edge]]:
         pokables += ((edge, e) for e in pokable_with)
     return pokables
 
-# Return the list of (ordered) pairs of edges that can be unpoked.
 def get_unpokables(self: Diagram) -> list[tuple[Edge, Edge]]:
+    """Return the list of ordered pairs of edges that can be unpoked."""
     unpokables = []
     for edge in get_edges(self):
         if any(edge in pair for pair in unpokables):
@@ -41,8 +41,8 @@ def get_unpokables(self: Diagram) -> list[tuple[Edge, Edge]]:
                 unpokables.append(tuple(sorted(abs(n) for n in face_cw)))
     return unpokables
 
-# Return the list of (ordered) triplets of edges that can be slid.
 def get_slidables(self: Diagram) -> list[tuple[Edge, Edge, Edge]]:
+    """Return the list of ordered triplets of edges that can be slid."""
     slidables = []
     for edge in get_edges(self):
         if any(edge in triplet for triplet in slidables):
@@ -54,8 +54,8 @@ def get_slidables(self: Diagram) -> list[tuple[Edge, Edge, Edge]]:
                 slidables.append(tuple(sorted(abs(n) for n in face_cw)))
     return slidables
 
-# Readjust the edge values of `diagram` with the expectation of a twist at `target_edge`.
 def _prepare_twist(self: Diagram, target_edge: Edge) -> PDNotation:
+    """Readjust the edge values of `diagram` with the expectation of a twist at `target_edge`."""
     pd_code: PDNotation = []
 
     # Map over each edge in each crossing of `diagram`.
@@ -75,24 +75,24 @@ def _prepare_twist(self: Diagram, target_edge: Edge) -> PDNotation:
     
     return pd_code
 
-# Apply a positive twist on `target_edge`.
 def _postwist(self: Diagram, target_edge: Edge) -> Diagram:
+    """Apply a positive twist on `target_edge`."""
     pd_code = _prepare_twist(self, target_edge)
     pd_code.append((target_edge + 1, target_edge + 1, target_edge + 2, target_edge))
     return Diagram(pd_code)
 
-# Apply a negative twist on `target_edge`.
 def _negtwist(self: Diagram, target_edge: Edge) -> Diagram:
+    """Apply a negative twist on `target_edge`."""
     pd_code = _prepare_twist(self, target_edge)
     pd_code.append((target_edge, target_edge + 1, target_edge + 1, target_edge + 2))
     return Diagram(pd_code)
 
-# Twist `target_edge`.
 def twist(self: Diagram, target_edge: Edge, is_positive: bool = True) -> Diagram:
+    """Twist `target_edge`."""
     return _postwist(self, target_edge) if is_positive else _negtwist(self, target_edge)
 
-# Remove the twist adjacent to the given edge.
 def untwist(self: Diagram, edge: Edge) -> Diagram:
+    """Remove the twist adjacent to the given edge."""
     pd_code: PDNotation = self.pd_code.copy()
     for i, crossing in enumerate(pd_code):
         if crossing.count(edge) == 2:
@@ -103,8 +103,8 @@ def untwist(self: Diagram, edge: Edge) -> Diagram:
     pd_code = [tuple(e - 2 if e > edge else e for e in crossing) for crossing in pd_code]
     return Diagram(pd_code)
 
-# Readjust the edge values of `diagram` with the expectation of a poke between the two edges.
 def _prepare_poke(self: Diagram, lower_edge: Edge, higher_edge: Edge) -> PDNotation:
+    """Readjust the edge values of `diagram` with the expectation of a poke between the two edges."""
     pd_code: PDNotation = []
 
     # Map over each edge in each crossing of `diagram`.
@@ -137,8 +137,8 @@ def _prepare_poke(self: Diagram, lower_edge: Edge, higher_edge: Edge) -> PDNotat
 
     return pd_code
 
-# Poke `under_edge` underneath `over_edge`.
 def poke(self: Diagram, under_edge: Edge, over_edge: Edge) -> Diagram:
+    """Poke `under_edge` underneath `over_edge`."""
     # Disallow poking an edge under itself.
     if under_edge == over_edge:
         raise ReidemeisterError("cannot poke an edge underneath iteself.")
@@ -197,8 +197,8 @@ def poke(self: Diagram, under_edge: Edge, over_edge: Edge) -> Diagram:
 
     return Diagram(pd_code)
 
-# Remove the poke between the two given edges.
 def unpoke(self: Diagram, edge1: Edge, edge2: Edge) -> Diagram:
+    """Remove the poke between the two given edges."""
     pd_code: PDNotation = []
     deleted_crossings = 0
     for i, crossing in enumerate(self.pd_code):
@@ -229,8 +229,8 @@ def is_slidable(self: Diagram, edge1: Edge, edge2: Edge, edge3: Edge) -> bool:
         self._is_open(edge3) and self._is_closed(edge2) and self._is_half_open(edge1),
     ))
 
-# Slide an edge over the face formed by the three given edges.
 def slide(self: Diagram, edge1: Edge, edge2: Edge, edge3: Edge) -> Diagram:
+    """Slide an edge over the face formed by the three given edges."""
     edges = [edge1, edge2, edge3]
 
     # Check if edges all lie on the same face
