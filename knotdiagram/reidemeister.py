@@ -3,6 +3,22 @@ import random
 from knotdiagram.diagram import *
 from knotdiagram.properties import get_edges
 
+def _is_unpokable(self: Diagram, edge1: Edge, edge2: Edge) -> bool:
+    return any((
+        self._is_open(edge1) and self._is_closed(edge2),
+        self._is_open(edge2) and self._is_closed(edge1),
+    ))
+
+def _is_slidable(self: Diagram, edge1: Edge, edge2: Edge, edge3: Edge) -> bool:
+    return any((
+        self._is_open(edge1) and self._is_closed(edge2) and self._is_half_open(edge3),
+        self._is_open(edge1) and self._is_closed(edge3) and self._is_half_open(edge2),
+        self._is_open(edge2) and self._is_closed(edge1) and self._is_half_open(edge3),
+        self._is_open(edge2) and self._is_closed(edge3) and self._is_half_open(edge1),
+        self._is_open(edge3) and self._is_closed(edge1) and self._is_half_open(edge2),
+        self._is_open(edge3) and self._is_closed(edge2) and self._is_half_open(edge1),
+    ))
+
 def get_twistables(self: Diagram) -> list[Edge]:
     """Return the list of edges that can be twisted (which is all of them)."""
     return get_edges(self)
@@ -35,9 +51,9 @@ def get_unpokables(self: Diagram) -> list[tuple[Edge, Edge]]:
         if any(edge in pair for pair in unpokables):
             continue
         face_ccw, face_cw = self._get_adjacent_faces(edge)
-        if len(face_ccw) == 2 and is_unpokable(self, *[abs(n) for n in face_ccw]):
+        if len(face_ccw) == 2 and _is_unpokable(self, *[abs(n) for n in face_ccw]):
                 unpokables.append(tuple(sorted(abs(n) for n in face_ccw)))
-        if len(face_cw) == 2 and is_unpokable(self, *[abs(n) for n in face_cw]):
+        if len(face_cw) == 2 and _is_unpokable(self, *[abs(n) for n in face_cw]):
                 unpokables.append(tuple(sorted(abs(n) for n in face_cw)))
     return unpokables
 
@@ -48,9 +64,9 @@ def get_slidables(self: Diagram) -> list[tuple[Edge, Edge, Edge]]:
         if any(edge in triplet for triplet in slidables):
             continue
         face_ccw, face_cw = self._get_adjacent_faces(edge)
-        if len(face_ccw) == 3 and is_slidable(self, *[abs(n) for n in face_ccw]):
+        if len(face_ccw) == 3 and _is_slidable(self, *[abs(n) for n in face_ccw]):
                 slidables.append(tuple(sorted(abs(n) for n in face_ccw)))
-        if len(face_cw) == 3 and is_slidable(self, *[abs(n) for n in face_cw]):
+        if len(face_cw) == 3 and _is_slidable(self, *[abs(n) for n in face_cw]):
                 slidables.append(tuple(sorted(abs(n) for n in face_cw)))
     return slidables
 
@@ -213,22 +229,6 @@ def unpoke(self: Diagram, edge1: Edge, edge2: Edge) -> Diagram:
     pd_code = [tuple(e - 4 if e > higher_edge else e if e < lower_edge else e - 2 for e in crossing) for crossing in pd_code]
     return Diagram(pd_code)
 
-def is_unpokable(self: Diagram, edge1: Edge, edge2: Edge) -> bool:
-    return any((
-        self._is_open(edge1) and self._is_closed(edge2),
-        self._is_open(edge2) and self._is_closed(edge1),
-    ))
-
-def is_slidable(self: Diagram, edge1: Edge, edge2: Edge, edge3: Edge) -> bool:
-    return any((
-        self._is_open(edge1) and self._is_closed(edge2) and self._is_half_open(edge3),
-        self._is_open(edge1) and self._is_closed(edge3) and self._is_half_open(edge2),
-        self._is_open(edge2) and self._is_closed(edge1) and self._is_half_open(edge3),
-        self._is_open(edge2) and self._is_closed(edge3) and self._is_half_open(edge1),
-        self._is_open(edge3) and self._is_closed(edge1) and self._is_half_open(edge2),
-        self._is_open(edge3) and self._is_closed(edge2) and self._is_half_open(edge1),
-    ))
-
 def slide(self: Diagram, edge1: Edge, edge2: Edge, edge3: Edge) -> Diagram:
     """Slide an edge over the face formed by the three given edges."""
     edges = [edge1, edge2, edge3]
@@ -239,7 +239,7 @@ def slide(self: Diagram, edge1: Edge, edge2: Edge, edge3: Edge) -> Diagram:
         raise ReidemeisterError("can only slide three edges along the same face.")
     
     # Check if edges are layered properly
-    if not is_slidable(self, edge1, edge2, edge3):
+    if not _is_slidable(self, edge1, edge2, edge3):
         raise ReidemeisterError("given edges do not follow the correct pattern for a slide.")
 
     # Initialize three crossings to be updated while iterating over the relevant crossings.
