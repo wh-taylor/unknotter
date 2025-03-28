@@ -2,6 +2,14 @@ from itertools import product
 from knotdiagram.diagram import *
 from knotdiagram.utils import _next
 
+# Return the Gauss code of a diagram.
+def get_gauss_code(self: Diagram) -> list[int]:
+    raise NotImplementedError
+
+# Return the Dowker-Thistlethwait notation of a diagram.
+def get_dt_notation(self: Diagram) -> list[int]:
+    raise NotImplementedError
+
 # Return the Kauffman bracket of a diagram.
 def get_kauffman_bracket(self: Diagram) -> KnotPoly:
     if self == Diagram([]): return KnotPoly({0: 1})
