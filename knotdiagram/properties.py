@@ -1,15 +1,15 @@
 from itertools import product
 from knotdiagram.diagram import *
 
-def get_gauss_code(self: Diagram) -> list[int]:
+def gauss_code(self: Diagram) -> list[int]:
     """Return the Gauss code of a diagram."""
     raise NotImplementedError
 
-def get_dt_notation(self: Diagram) -> list[int]:
+def dt_notation(self: Diagram) -> list[int]:
     """Return the Dowker-Thistlethwait notation of a diagram."""
     raise NotImplementedError
 
-def get_kauffman_bracket(self: Diagram) -> KnotPoly:
+def kauffman_bracket(self: Diagram) -> KnotPoly:
     """Return the Kauffman bracket polynomial of a diagram."""
     if self == Diagram([]): return KnotPoly({0: 1})
 
@@ -66,10 +66,10 @@ def get_writhe(self: Diagram) -> int:
             writhe += 1
     return writhe
 
-def get_jones_polynomial(self: Diagram) -> KnotPoly:
+def jones(self: Diagram) -> KnotPoly:
     """Return the Jones polynomial of a diagram."""
     writhe = get_writhe(self)
-    kauffman_bracket = get_kauffman_bracket(self)
+    kauffman_bracket = kauffman_bracket(self)
     raw_jones_polynomial = kauffman_bracket * KnotPoly({3*writhe: 1 if writhe % 2 == 0 else -1})
     coefficients = {powers[0]/4: coefficients for powers, coefficients in raw_jones_polynomial.coefficients.items()}
     return KnotPoly(coefficients)
