@@ -69,11 +69,25 @@ def get_writhe(self: Diagram) -> int:
 def jones(self: Diagram) -> KnotPoly:
     """Return the Jones polynomial of a diagram."""
     writhe = get_writhe(self)
-    kauffman_bracket = kauffman_bracket(self)
-    raw_jones_polynomial = kauffman_bracket * KnotPoly({3*writhe: 1 if writhe % 2 == 0 else -1})
+    bracket = kauffman_bracket(self)
+    raw_jones_polynomial = bracket * KnotPoly({3*writhe: 1 if writhe % 2 == 0 else -1})
     coefficients = {powers[0]/4: coefficients for powers, coefficients in raw_jones_polynomial.coefficients.items()}
     return KnotPoly(coefficients)
 
 def get_edges(self: Diagram) -> list[Edge]:
     """Return a list of all edges in a diagram with their integer values."""
     return [i + 1 for i in range(2 * len(self.pd_code))]
+
+def _is_valid(self: Diagram) -> bool:
+    edges = get_edges(self)
+    for crossing in self.pd_code:
+        for edge in crossing:
+            if edge not in edges:
+                return False
+    for edge in edges:
+        edge_count = 0
+        for crossing in self.pd_code:
+            edge_count += crossing.count(edge)
+        if edge_count != 2:
+            return False
+    return True

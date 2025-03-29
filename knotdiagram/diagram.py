@@ -137,7 +137,7 @@ class Diagram:
         An edge is closed if, on both of the crossings it connects to, it crosses underneath.
         """
         adj_crossings = [crossing for crossing in self.pd_code if edge in crossing]
-        return edge in [adj_crossings[0][0], adj_crossings[0][2]] and edge in [adj_crossings[1][0], adj_crossings[1][2]]
+        return all(edge in [crossing[0], crossing[2]] for crossing in adj_crossings)
 
     def _is_open(self, edge: Edge) -> bool:
         """Check if an edge on a diagram is open.
@@ -145,7 +145,7 @@ class Diagram:
         An edge is open if, on both of the crossings it connects to, it crosses over.
         """
         adj_crossings = [crossing for crossing in self.pd_code if edge in crossing]
-        return (edge in [adj_crossings[0][1], adj_crossings[0][3]]) and (edge in [adj_crossings[1][1], adj_crossings[1][3]])
+        return all(edge in [crossing[1], crossing[3]] for crossing in adj_crossings)
 
     def _is_half_open(self, edge: Edge) -> bool:
         """Check if an edge on a diagram is half-open.
@@ -153,3 +153,6 @@ class Diagram:
         An edge is half-open if it crosses over one of its crossings and under the other.
         """
         return not self._is_open(edge) and not self._is_closed(edge)
+
+    def _mathematica_format(self) -> str:
+        return 'PD[' + ','.join(['X[' + ','.join([str(edge) for edge in crossing]) + ']' for crossing in self.pd_code]) + ']'

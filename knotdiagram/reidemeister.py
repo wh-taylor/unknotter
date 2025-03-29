@@ -1,7 +1,8 @@
 import math
 import random
+import time
 from knotdiagram.diagram import *
-from knotdiagram.properties import get_edges
+from knotdiagram.properties import get_edges, _is_valid
 
 def _is_unpokable(self: Diagram, edge1: Edge, edge2: Edge) -> bool:
     return any((
@@ -77,38 +78,61 @@ def _prepare_twist(self: Diagram, target_edge: Edge) -> PDNotation:
     # Map over each edge in each crossing of `diagram`.
     for crossing in self.pd_code:
         new_crossing_as_list: list[Edge] = []
-        for edge in crossing:
-            # If a given edge comes before the target edge, leave it alone.
-            # If a given edge comes after the target edge, add two.
-            # If it is the target edge, leave it alone if it connects with the
-            #   previous edge or add two if it connects with the next edge.
-            if edge < target_edge or edge == target_edge and self._prev(edge) in crossing:
-                new_crossing_as_list.append(edge)
+        # If the target edge lies on a twist
+        if crossing.count(target_edge) == 2:
+            if self._next(crossing[0]) == crossing[1] or self._next(self._next(crossing[0])) == crossing[1]:
+                new_crossing_as_list.append(crossing[0])
+                new_crossing_as_list.append(crossing[1] + 2)
+                new_crossing_as_list.append(crossing[2])
+                new_crossing_as_list.append(crossing[3] + 2)
             else:
-                new_crossing_as_list.append(edge + 2)
+                new_crossing_as_list.append(crossing[0] + 2)
+                new_crossing_as_list.append(crossing[1])
+                new_crossing_as_list.append(crossing[2] + 2)
+                new_crossing_as_list.append(crossing[3])
+        else:
+            for edge in crossing:
+                # If a given edge comes before the target edge, leave it alone.
+                # If a given edge comes after the target edge, add two.
+                # If it is the target edge, leave it alone if it connects with the
+                #   previous edge or add two if it connects with the next edge.
+                if edge < target_edge or edge == target_edge and self._prev(edge) in crossing:
+                    new_crossing_as_list.append(edge)
+                else:
+                    new_crossing_as_list.append(edge + 2)
         new_crossing: Crossing = tuple(new_crossing_as_list)
         pd_code.append(new_crossing)
     
     return pd_code
 
-def _postwist(self: Diagram, target_edge: Edge) -> Diagram:
-    """Apply a positive twist on `target_edge`."""
-    pd_code = _prepare_twist(self, target_edge)
-    pd_code.append((target_edge + 1, target_edge + 1, target_edge + 2, target_edge))
+def left_positive_twist(self: Diagram, edge: Edge) -> Diagram:
+    """Apply a left-positive twist on `edge`."""
+    pd_code = _prepare_twist(self, edge)
+    pd_code.append((edge, edge + 2, edge + 1, edge + 1))
     return Diagram(pd_code)
 
-def _negtwist(self: Diagram, target_edge: Edge) -> Diagram:
-    """Apply a negative twist on `target_edge`."""
-    pd_code = _prepare_twist(self, target_edge)
-    pd_code.append((target_edge, target_edge + 1, target_edge + 1, target_edge + 2))
+def left_negative_twist(self: Diagram, edge: Edge) -> Diagram:
+    """Apply a left-negative twist on `edge`."""
+    pd_code = _prepare_twist(self, edge)
+    pd_code.append((edge + 1, edge, edge + 2, edge + 1))
     return Diagram(pd_code)
 
-def twist(self: Diagram, target_edge: Edge, is_positive: bool = True) -> Diagram:
-    """Twist `target_edge`."""
-    return _postwist(self, target_edge) if is_positive else _negtwist(self, target_edge)
+def right_positive_twist(self: Diagram, edge: Edge) -> Diagram:
+    """Apply a right-positive twist on `edge`."""
+    pd_code = _prepare_twist(self, edge)
+    pd_code.append((edge + 1, edge + 1, edge + 2, edge))
+    return Diagram(pd_code)
+
+def right_negative_twist(self: Diagram, edge: Edge) -> Diagram:
+    """Apply a right-negative twist on `edge`."""
+    pd_code = _prepare_twist(self, edge)
+    pd_code.append((edge, edge + 1, edge + 1, edge + 2))
+    return Diagram(pd_code)
 
 def untwist(self: Diagram, edge: Edge) -> Diagram:
     """Remove the twist adjacent to the given edge."""
+    if edge == 1 or edge == 2*len(self.pd_code):
+        return untwist(self.shift(1), self._next(edge))
     pd_code: PDNotation = self.pd_code.copy()
     for i, crossing in enumerate(pd_code):
         if crossing.count(edge) == 2:
@@ -126,6 +150,8 @@ def _prepare_poke(self: Diagram, lower_edge: Edge, higher_edge: Edge) -> PDNotat
     # Map over each edge in each crossing of `diagram`.
     for crossing in self.pd_code:
         new_crossing_as_list: list[Edge] = []
+        if crossing.count(lower_edge) == 2 or crossing.count(higher_edge) == 2:
+            raise NotImplementedError
         for edge in crossing:
             # If a given edge comes before the lower edge, leave it alone.
             # If a given edge is between the lower and higher edges, add two.
@@ -155,6 +181,9 @@ def _prepare_poke(self: Diagram, lower_edge: Edge, higher_edge: Edge) -> PDNotat
 
 def poke(self: Diagram, under_edge: Edge, over_edge: Edge) -> Diagram:
     """Poke `under_edge` underneath `over_edge`."""
+    # if under_edge == 1 or over_edge == 1 or under_edge == 2*len(self.pd_code) or over_edge == 2*len(self.pd_code):
+    #     return poke(self.shift(1), self._next(under_edge), self._next(over_edge))
+
     # Disallow poking an edge under itself.
     if under_edge == over_edge:
         raise ReidemeisterError("cannot poke an edge underneath iteself.")
@@ -215,6 +244,8 @@ def poke(self: Diagram, under_edge: Edge, over_edge: Edge) -> Diagram:
 
 def unpoke(self: Diagram, edge1: Edge, edge2: Edge) -> Diagram:
     """Remove the poke between the two given edges."""
+    if edge1 == 1 or edge2 == 1 or edge1 == 2*len(self.pd_code) or edge2 == 2*len(self.pd_code):
+        return unpoke(self.shift(1), self._next(edge1), self._next(edge2))
     pd_code: PDNotation = []
     deleted_crossings = 0
     for i, crossing in enumerate(self.pd_code):
@@ -287,27 +318,34 @@ def apply_random_move(self: Diagram, beta: float) -> Diagram:
 
     move_decision = random.choices([1, 2, 3, 4, 5], weights=weights)[0]
 
-    match move_decision:
-        case 1:
-            edge = random.choices(twistables)[0]
-            print('Twist', edge)
-            return twist(self, edge)
-        case 2:
-            edge = random.choices(untwistables)[0]
-            print('Untwist', edge)
-            return untwist(self, edge)
-        case 3:
-            edges = random.choices(pokables)[0]
-            print('Poke', *edges)
-            return poke(self, *edges)
-        case 4:
-            edges = random.choices(unpokables)[0]
-            print('Unpoke', *edges)
-            return unpoke(self, *edges)
-        case 5:
-            edges = random.choices(slidables)[0]
-            print('Slide', *edges)
-            return slide(self, *edges)
+    try:
+        match move_decision:
+            case 1:
+                edge = random.choices(twistables)[0]
+                twist_decision = random.choices([1, 2, 3, 4])[0]
+                match twist_decision:
+                    case 1:
+                        return left_positive_twist(self, edge)
+                    case 2:
+                        return left_negative_twist(self, edge)
+                    case 3:
+                        return right_positive_twist(self, edge)
+                    case 4:
+                        return right_negative_twist(self, edge)
+            case 2:
+                edge = random.choices(untwistables)[0]
+                return untwist(self, edge)
+            case 3:
+                edges = random.choices(pokables)[0]
+                return poke(self, *edges)
+            case 4:
+                edges = random.choices(unpokables)[0]
+                return unpoke(self, *edges)
+            case 5:
+                edges = random.choices(slidables)[0]
+                return slide(self, *edges)
+    except NotImplementedError:
+        return apply_random_move(self, beta)
 
 def randomeister(self: Diagram, moves: int, beta: float) -> list[Diagram]:
     diagrams: list[Diagram] = [self]
@@ -319,7 +357,19 @@ def randomeister(self: Diagram, moves: int, beta: float) -> list[Diagram]:
 
 def unknot_solver(self: Diagram, beta: float):
     diagram = self
+    i = 0
+    t0 = time.time()
     while len(diagram.pd_code) > 2:
         diagram = apply_random_move(diagram, beta)
-        print(len(diagram.pd_code), diagram)
-    print(diagram)
+        # print(len(diagram.pd_code), end=', ')
+        assert _is_valid(diagram)
+        i += 1
+
+        if i > 2000:
+            print('Iterations exceeded 2000; given diagram is most likely not an unknot.')
+            t1 = time.time()
+            print('Time:', t1 - t0)
+            return
+    t1 = time.time()
+    print('Iterations:', i)
+    print('Time:', t1 - t0)
