@@ -1,4 +1,4 @@
-# knot-diagram
+# Unknotter
 
 Manipulate and analyze knot and link diagrams.
 

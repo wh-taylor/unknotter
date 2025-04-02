@@ -1,8 +1,8 @@
 import pytest
-from knotdiagram.catalog import *
-from knotdiagram.diagram import Diagram, ReidemeisterError
-from knotdiagram.polynomial import KnotPoly
-from knotdiagram.reidemeister import *
-from knotdiagram.properties import *
-from knotdiagram.transformations import *
+from unknotter.catalog import *
+from unknotter.diagram import Diagram, ReidemeisterError
+from unknotter.polynomial import KnotPoly
+from unknotter.reidemeister import *
+from unknotter.properties import *
+from unknotter.transformations import *
 

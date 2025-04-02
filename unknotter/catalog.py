@@ -1,9 +1,9 @@
-from knotdiagram.diagram import Diagram, PDNotation
+from unknotter.diagram import Diagram, PDNotation
 from itertools import islice
 
 # Initialize pre-defined prime knot knot diagrams
 _knot_catalog: dict[str, str] = {}
-with open('knotdiagram/knotinfo.csv') as f:
+with open('unknotter/knotinfo.csv') as f:
     for line in f.readlines():
         parts = line.split(',')
         name, raw_pd = parts[0], parts[1]

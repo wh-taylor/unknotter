@@ -1,5 +1,5 @@
 from __future__ import annotations
-from knotdiagram.polynomial import *
+from unknotter.polynomial import *
 
 Edge = int
 SignedEdge = int

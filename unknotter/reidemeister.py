@@ -1,8 +1,8 @@
 import math
 import random
 import time
-from knotdiagram.diagram import *
-from knotdiagram.properties import get_edges, _is_valid
+from unknotter.diagram import *
+from unknotter.properties import get_edges, _is_valid
 
 def _is_unpokable(self: Diagram, edge1: Edge, edge2: Edge) -> bool:
     return any((
@@ -244,8 +244,8 @@ def poke(self: Diagram, under_edge: Edge, over_edge: Edge) -> Diagram:
 
 def unpoke(self: Diagram, edge1: Edge, edge2: Edge) -> Diagram:
     """Remove the poke between the two given edges."""
-    if edge1 == 1 or edge2 == 1 or edge1 == 2*len(self.pd_code) or edge2 == 2*len(self.pd_code):
-        return unpoke(self.shift(1), self._next(edge1), self._next(edge2))
+    # if edge1 == 1 or edge2 == 1 or edge1 == 2*len(self.pd_code) or edge2 == 2*len(self.pd_code):
+    #     return unpoke(self.shift(1), self._next(edge1), self._next(edge2))
     pd_code: PDNotation = []
     deleted_crossings = 0
     for i, crossing in enumerate(self.pd_code):

@@ -1,5 +1,5 @@
 from itertools import product
-from knotdiagram.diagram import *
+from unknotter.diagram import *
 
 def gauss_code(self: Diagram) -> list[int]:
     """Return the Gauss code of a diagram."""
