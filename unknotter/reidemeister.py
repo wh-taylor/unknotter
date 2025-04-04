@@ -244,8 +244,8 @@ def poke(self: Diagram, under_edge: Edge, over_edge: Edge) -> Diagram:
 
 def unpoke(self: Diagram, edge1: Edge, edge2: Edge) -> Diagram:
     """Remove the poke between the two given edges."""
-    # if edge1 == 1 or edge2 == 1 or edge1 == 2*len(self.pd_code) or edge2 == 2*len(self.pd_code):
-    #     return unpoke(self.shift(1), self._next(edge1), self._next(edge2))
+    if edge1 == 1 or edge2 == 1 or edge1 == 2*len(self.pd_code) or edge2 == 2*len(self.pd_code):
+        return unpoke(self.shift(1), self._next(edge1), self._next(edge2))
     pd_code: PDNotation = []
     deleted_crossings = 0
     for i, crossing in enumerate(self.pd_code):
@@ -347,12 +347,13 @@ def apply_random_move(self: Diagram, beta: float) -> Diagram:
     except NotImplementedError:
         return apply_random_move(self, beta)
 
-def randomeister(self: Diagram, moves: int, beta: float) -> list[Diagram]:
+def randomeister(self: Diagram, moves: int, beta: float, show: bool = False) -> list[Diagram]:
     diagrams: list[Diagram] = [self]
     diagram = self
     for _ in range(moves):
         diagram = apply_random_move(diagram, beta)
         diagrams.append(diagram)
+        if show: print(len(diagram.pd_code))
     return diagrams
 
 def unknot_solver(self: Diagram, beta: float):
