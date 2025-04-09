@@ -9,9 +9,9 @@ def dt_notation(self: Diagram) -> list[int]:
     """Return the Dowker-Thistlethwait notation of a diagram."""
     raise NotImplementedError
 
-def kauffman_bracket(self: Diagram) -> KnotPoly:
+def kauffman_bracket(self: Diagram) -> Polynomial:
     """Return the Kauffman bracket polynomial of a diagram."""
-    if self == Diagram([]): return KnotPoly({0: 1})
+    if self == Diagram([]): return Polynomial({0: 1})
 
     factored_poly = [(((a, d), (b, c)), ((a, b), (c, d))) for a, b, c, d in self.pd_code]
 
@@ -52,9 +52,9 @@ def kauffman_bracket(self: Diagram) -> KnotPoly:
 
     newlist = [(power, len(term)-1) for power, term in distributed_poly]
 
-    disjoint_unknot_poly = KnotPoly({2: -1, -2: -1})
+    disjoint_unknot_poly = Polynomial({2: -1, -2: -1})
 
-    return sum((KnotPoly({power1: 1}) * disjoint_unknot_poly**power2 for power1, power2 in newlist), KnotPoly.zero())
+    return sum((Polynomial({power1: 1}) * disjoint_unknot_poly**power2 for power1, power2 in newlist), Polynomial.zero())
 
 def get_writhe(self: Diagram) -> int:
     """Return the writhe of a diagram."""
@@ -66,13 +66,13 @@ def get_writhe(self: Diagram) -> int:
             writhe += 1
     return writhe
 
-def jones(self: Diagram) -> KnotPoly:
+def jones(self: Diagram) -> Polynomial:
     """Return the Jones polynomial of a diagram."""
     writhe = get_writhe(self)
     bracket = kauffman_bracket(self)
-    raw_jones_polynomial = bracket * KnotPoly({3*writhe: 1 if writhe % 2 == 0 else -1})
+    raw_jones_polynomial = bracket * Polynomial({3*writhe: 1 if writhe % 2 == 0 else -1})
     coefficients = {powers[0]/4: coefficients for powers, coefficients in raw_jones_polynomial.coefficients.items()}
-    return KnotPoly(coefficients)
+    return Polynomial(coefficients)
 
 def get_edges(self: Diagram) -> list[Edge]:
     """Return a list of all edges in a diagram with their integer values."""

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-class KnotPoly:
+class Polynomial:
     def __init__(self, coefficients: dict[tuple[int, ...], int] | dict[int, int], fallback_n_vars: int = 0):
         # If `coefficients` uses integer powers instead of tuple powers,
         # we want to force it into tuple powers.
@@ -40,10 +40,10 @@ class KnotPoly:
         
         return sum
     
-    def __eq__(self, other: KnotPoly) -> bool:
+    def __eq__(self, other: Polynomial) -> bool:
         return self.coefficients == other.coefficients and self.n_vars == other.n_vars
     
-    def __add__(self, other: KnotPoly):
+    def __add__(self, other: Polynomial):
         if self.n_vars != other.n_vars:
             raise TypeError("cannot add two polynomials with different numbers of variables.")
 
@@ -54,9 +54,9 @@ class KnotPoly:
             sum = self.coefficients.get(powers, 0) + other.coefficients.get(powers, 0)
             new_coefficients[powers] = sum
 
-        return KnotPoly(new_coefficients)
+        return Polynomial(new_coefficients)
     
-    def __mul__(self, other: KnotPoly):
+    def __mul__(self, other: Polynomial):
         if self.n_vars != other.n_vars:
             raise TypeError("cannot multiply two polynomials with different numbers of variables.")
 
@@ -69,13 +69,13 @@ class KnotPoly:
                     new_coefficients[prod_power] = 0
                 new_coefficients[prod_power] += coefficient1 * coefficient2
 
-        return KnotPoly(new_coefficients)
+        return Polynomial(new_coefficients)
     
     def __pow__(self, power: int):
         if power < 0:
             raise ValueError("cannot take a knot polynomial to a negative power.")
 
-        p = KnotPoly.one(self.n_vars)
+        p = Polynomial.one(self.n_vars)
         for i in range(power):
             p *= self
         return p
@@ -114,9 +114,9 @@ class KnotPoly:
     def __repr__(self) -> str:
         return self.var('_')
     
-    def zero(n_vars: int = 1) -> KnotPoly:
-        return KnotPoly({}, n_vars)
+    def zero(n_vars: int = 1) -> Polynomial:
+        return Polynomial({}, n_vars)
     
-    def one(n_vars: int = 1) -> KnotPoly:
-        return KnotPoly({(0,)*n_vars: 1})
+    def one(n_vars: int = 1) -> Polynomial:
+        return Polynomial({(0,)*n_vars: 1})
 
