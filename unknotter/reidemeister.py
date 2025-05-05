@@ -116,6 +116,8 @@ def left_positive_twist(self: Diagram, edge: Edge) -> Diagram:
             return Diagram([(1, 2, 2, 3), (3, 1, 4, 4)])
         if edge == 2:
             return Diagram([(1, 4, 2, 1), (3, 2, 4, 3)])
+    if edge == 1 or edge == 2*len(self.pd_code):
+        return left_positive_twist(self.shift(1), self._next(edge))
     pd_code = _prepare_twist(self, edge)
     pd_code.append((edge, edge + 2, edge + 1, edge + 1))
     return Diagram(pd_code)
@@ -127,6 +129,8 @@ def left_negative_twist(self: Diagram, edge: Edge) -> Diagram:
             return Diagram([(1, 2, 2, 3), (4, 3, 1, 4)])
         if edge == 2:
             return Diagram([(1, 4, 2, 1), (2, 4, 3, 3)])
+    if edge == 1 or edge == 2*len(self.pd_code):
+        return left_negative_twist(self.shift(1), self._next(edge))
     pd_code = _prepare_twist(self, edge)
     pd_code.append((edge + 1, edge, edge + 2, edge + 1))
     return Diagram(pd_code)
@@ -138,6 +142,8 @@ def right_positive_twist(self: Diagram, edge: Edge) -> Diagram:
             return Diagram([(1, 2, 2, 3), (3, 4, 4, 1)])
         if edge == 2:
             return Diagram([(1, 4, 2, 1), (3, 3, 4, 2)])
+    if edge == 1 or edge == 2*len(self.pd_code):
+        return right_positive_twist(self.shift(1), self._next(edge))
     pd_code = _prepare_twist(self, edge)
     pd_code.append((edge + 1, edge + 1, edge + 2, edge))
     return Diagram(pd_code)
@@ -149,6 +155,8 @@ def right_negative_twist(self: Diagram, edge: Edge) -> Diagram:
             return Diagram([(1, 2, 2, 3), (4, 4, 1, 3)])
         if edge == 2:
             return Diagram([(1, 4, 2, 1), (2, 3, 3, 4)])
+    if edge == 1 or edge == 2*len(self.pd_code):
+        return right_negative_twist(self.shift(1), self._next(edge))
     pd_code = _prepare_twist(self, edge)
     pd_code.append((edge, edge + 1, edge + 1, edge + 2))
     return Diagram(pd_code)
