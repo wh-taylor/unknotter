@@ -47,6 +47,10 @@ def get_pokables(self: Diagram) -> list[tuple[Edge, Edge]]:
 
 def get_unpokables(self: Diagram) -> list[tuple[Edge, Edge]]:
     """Return the list of ordered pairs of edges that can be unpoked."""
+    if len(self.pd_code) <= 2:
+        # Prevent unpoking a two-crossing knot.
+        # We want to avoid diagrams with zero crossings.
+        return []
     unpokables = []
     for edge in get_edges(self):
         if any(edge in pair for pair in unpokables):
