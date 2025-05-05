@@ -2,7 +2,7 @@ import math
 import random
 import time
 from unknotter.diagram import *
-from unknotter.properties import get_edges, _is_valid
+from unknotter.properties import get_edges, is_infinity_unknot, _is_valid
 
 def _is_unpokable(self: Diagram, edge1: Edge, edge2: Edge) -> bool:
     return any((
@@ -107,24 +107,44 @@ def _prepare_twist(self: Diagram, target_edge: Edge) -> PDNotation:
 
 def left_positive_twist(self: Diagram, edge: Edge) -> Diagram:
     """Apply a left-positive twist on `edge`."""
+    if is_infinity_unknot(self):
+        if edge == 1:
+            return Diagram([(1, 2, 2, 3), (3, 1, 4, 4)])
+        if edge == 2:
+            return Diagram([(1, 4, 2, 1), (3, 2, 4, 3)])
     pd_code = _prepare_twist(self, edge)
     pd_code.append((edge, edge + 2, edge + 1, edge + 1))
     return Diagram(pd_code)
 
 def left_negative_twist(self: Diagram, edge: Edge) -> Diagram:
     """Apply a left-negative twist on `edge`."""
+    if is_infinity_unknot(self):
+        if edge == 1:
+            return Diagram([(1, 2, 2, 3), (4, 3, 1, 4)])
+        if edge == 2:
+            return Diagram([(1, 4, 2, 1), (2, 4, 3, 3)])
     pd_code = _prepare_twist(self, edge)
     pd_code.append((edge + 1, edge, edge + 2, edge + 1))
     return Diagram(pd_code)
 
 def right_positive_twist(self: Diagram, edge: Edge) -> Diagram:
     """Apply a right-positive twist on `edge`."""
+    if is_infinity_unknot(self):
+        if edge == 1:
+            return Diagram([(1, 2, 2, 3), (3, 4, 4, 1)])
+        if edge == 2:
+            return Diagram([(1, 4, 2, 1), (3, 3, 4, 2)])
     pd_code = _prepare_twist(self, edge)
     pd_code.append((edge + 1, edge + 1, edge + 2, edge))
     return Diagram(pd_code)
 
 def right_negative_twist(self: Diagram, edge: Edge) -> Diagram:
     """Apply a right-negative twist on `edge`."""
+    if is_infinity_unknot(self):
+        if edge == 1:
+            return Diagram([(1, 2, 2, 3), (4, 4, 1, 3)])
+        if edge == 2:
+            return Diagram([(1, 4, 2, 1), (2, 3, 3, 4)])
     pd_code = _prepare_twist(self, edge)
     pd_code.append((edge, edge + 1, edge + 1, edge + 2))
     return Diagram(pd_code)

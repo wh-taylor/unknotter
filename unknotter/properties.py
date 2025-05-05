@@ -78,6 +78,9 @@ def get_edges(self: Diagram) -> list[Edge]:
     """Return a list of all edges in a diagram with their integer values."""
     return [i + 1 for i in range(2 * len(self.pd_code))]
 
+def is_infinity_unknot(self: Diagram) -> bool:
+    return self == Diagram([(1, 2, 2, 1)]) or self == Diagram([(2, 2, 1, 1)])
+
 def _is_valid(self: Diagram) -> bool:
     edges = get_edges(self)
     for crossing in self.pd_code:
