@@ -57,6 +57,3 @@ OCHIAI_UNKNOT = Diagram([
     (19, 3, 20, 2),   (21, 8, 22, 9),   (23, 4, 24, 5),
     (25, 19, 26, 18)
 ])
-
-# A simple unknot with a twist move.
-INFINITY_UNKNOT = Diagram([(1, 1, 2, 2)])
