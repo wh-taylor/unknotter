@@ -11,7 +11,7 @@ def dt_notation(self: Diagram) -> list[int]:
 
 def kauffman_bracket(self: Diagram) -> Polynomial:
     """Return the Kauffman bracket polynomial of a diagram."""
-    if self == Diagram([]): return Polynomial({0: 1})
+    if self == Diagram([(1, 1, 2, 2)]): return Polynomial({3: -1})
 
     factored_poly = [(((a, d), (b, c)), ((a, b), (c, d))) for a, b, c, d in self.pd_code]
 
