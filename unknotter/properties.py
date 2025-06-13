@@ -94,3 +94,12 @@ def _is_valid(self: Diagram) -> bool:
         if edge_count != 2:
             return False
     return True
+
+def get_plaintext_code(self: Diagram) -> str:
+    output = '['
+    for i, (a, b, c, d) in enumerate(self.pd_code):
+        output += f'[{a};{b};{c};{d}]'
+        if i != len(self.pd_code) - 1:
+            output += ';'
+    output += ']'
+    return output
