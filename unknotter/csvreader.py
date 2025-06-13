@@ -7,6 +7,6 @@ def read_to_list(filename: str):
         for line in f.readlines()[1:]:
             parts = line.split(',')
             name, raw_pd = parts[0], parts[1]
-            catalog.append((name, Diagram(_raw_pd_to_pd(raw_pd))))
+            catalog.append((name, _raw_pd_to_pd(raw_pd)))
     return catalog
 
