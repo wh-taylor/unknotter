@@ -4,7 +4,7 @@ from itertools import islice
 # Initialize pre-defined prime knot knot diagrams
 _knot_catalog: dict[str, str] = {}
 with open('unknotter/knotinfo.csv') as f:
-    for line in f.readlines():
+    for line in f.readlines()[1:]:
         parts = line.split(',')
         name, raw_pd = parts[0], parts[1]
         _knot_catalog[name] = raw_pd
