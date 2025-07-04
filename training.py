@@ -1,7 +1,7 @@
 import unknotter as ut
 
-CROSSINGS = 8
-TRAINING_FILE = 'training2_8x.csv'
+CROSSINGS = 10
+TRAINING_FILE = 'training2_10x.csv'
 
 print('Reading codes from CSV file...')
 dataset = ut.read_to_list(TRAINING_FILE)
@@ -66,6 +66,6 @@ for i in range(TRIALS):
     # print([pd_code_to_vector(knot.pd_code, CROSSINGS+1) for knot in first_knots])
     label_prediction = clf.predict([pd_code_to_vector(knot.pd_code, CROSSINGS+1) for knot in (unknot, trefoil)])
     # print(label_prediction)
-    if label_prediction[0] == 1: successes += 1
-    if label_prediction[1] == 0: successes += 1
+    if label_prediction[0] == 0: successes += 1
+    if label_prediction[1] == 1: successes += 1
 print('Remeasured accuracy:', successes / (TRIALS*2))
