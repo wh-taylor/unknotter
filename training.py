@@ -1,9 +1,10 @@
 import unknotter as ut
 
 CROSSINGS = 8
+TRAINING_FILE = 'training2_8x.csv'
 
 print('Reading codes from CSV file...')
-dataset = ut.read_to_list('training2.csv')
+dataset = ut.read_to_list(TRAINING_FILE)
 print('Done')
 
 from sklearn.neural_network import MLPClassifier
