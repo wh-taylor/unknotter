@@ -3,15 +3,16 @@ import unknotter as ut
 import csv
 
 n = 2
-crossings = 10
+crossings = 6
 logAll = False
-log100 = True
-filename = f'training{n}_{crossings}x.csv'
+log100 = False
+# filename = f'training{n}_{crossings}x.csv'
+filename = f'darwin_training{n}_{crossings}x.csv'
 
 knot_choices = list(ut.first_n_knots(n))
 
 knots: list[ut.Diagram] = []
-for i in range(50000):
+for i in range(50):
     knot = knot_choices[i % n][1]
     while len(knot.pd_code) < crossings:
         knot = ut.apply_random_move(knot, 0)
@@ -23,5 +24,7 @@ data = [
     ['Knot', 'Code'],
 ] + [[knot_choices[i % n][0], ut.get_plaintext_code(knot)] for i, knot in enumerate(knots)]
 
-with open(filename, 'w', newline='') as file:
-    csv.writer(file).writerows(data)
+# with open(filename, 'w', newline='') as file:
+#     csv.writer(file).writerows(data)
+
+print('\n'.join(','.join(line) for line in data[1:]))
