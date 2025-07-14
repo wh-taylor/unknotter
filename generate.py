@@ -11,13 +11,13 @@ data_size = int(sys.argv[3])
 
 knot_choices = list(ut.first_n_knots(knot_count))
 
-knot_count: list[ut.Diagram] = []
+knots: list[ut.Diagram] = []
 for i in range(data_size):
     knot = knot_choices[i % knot_count][1]
     while len(knot.pd_code) < crossing_count:
         knot = ut.apply_random_move(knot, 0)
-    knot_count.append(knot)
+    knots.append(knot)
 
-data = [[knot_choices[i % knot_count][0], ut.get_plaintext_code(knot)] for i, knot in enumerate(knot_count)]
+data = [[knot_choices[i % knot_count][0], ut.get_plaintext_code(knot)] for i, knot in enumerate(knots)]
 
 print('\n'.join(','.join(line) for line in data))
