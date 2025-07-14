@@ -1,76 +1,58 @@
 import unknotter as ut
+import sys
 
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
 
-def get_accuracy(knots: int, crossings: int, data_size: int, log: bool = False) -> float:
-    if log: print('Reading codes from CSV file...')
-    dataset = ut.read_to_list(f'training{knots}_{crossings}x.csv', data_size)
-    if log: print('Done')
+if len(sys.argv) not in [4, 5]:
+    print("Expected `python3 training.py <data filename> <# knots> <# crossings> [<data size>]`.")
+    sys.exit(1)
 
-    labels = LabelEncoder().fit_transform([label for label, _ in dataset])
+data_filename = sys.argv[1]
+knot_count = int(sys.argv[2])
+crossing_count = int(sys.argv[3])
 
-    if log: print('Fitting codes into matrix...')
+# Read codes from CSV file
+if len(sys.argv) == 4:
+    dataset = ut.read_to_list(data_filename)
+else:
+    data_size = int(sys.argv[4])
+    dataset = ut.read_to_list(data_filename, data_size)
 
-    def pd_code_to_vector(code: ut.PDNotation, num_crossings: int):
-        code = [edge for crossing in code for edge in crossing]
-        if len(code) < num_crossings * 4:
-            for _ in range(num_crossings - int(len(code)/4)):
-                for _ in range(4): code.append(0)
-        if len(code) > num_crossings * 4:
-            raise Exception(f'knot has more than {crossings+1} crossings')
-        return code
+labels = LabelEncoder().fit_transform([label for label, _ in dataset])
 
-    codes: list[ut.PDNotation] = [code for _, code in dataset]
-    codes = [pd_code_to_vector(code, crossings+1) for code in codes]
+# Fit codes into matrix
 
-    if log: print('Done')
+def pd_code_to_vector(code: ut.PDNotation, num_crossings: int):
+    code = [edge for crossing in code for edge in crossing]
+    if len(code) < num_crossings * 4:
+        for _ in range((num_crossings - int(len(code)/4)) * 4):
+            code.append(0)
+    if len(code) > num_crossings * 4:
+        raise Exception(f'knot has more than {num_crossings} crossings')
+    return code
 
-    code_train, code_test, label_train, label_test = train_test_split(
-        codes, labels,
-        test_size=0.2,
-        shuffle=True,
-        random_state=1,
-    )
+codes: list[ut.PDNotation] = [code for _, code in dataset]
+codes = [pd_code_to_vector(code, crossing_count+1) for code in codes]
 
-    clf = MLPClassifier(solver='sgd', alpha=1e-5, hidden_layer_sizes=[10, 10, 10], max_iter=1000)
+code_train, code_test, label_train, label_test = train_test_split(
+    codes, labels,
+    test_size=0.2,
+    shuffle=True,
+    random_state=1,
+)
 
-    if log: print('Training...')
-    clf.fit(code_train, label_train)
-    if log: print('Done')
+clf = MLPClassifier(solver='sgd', alpha=1e-5, hidden_layer_sizes=[10, 10, 10], max_iter=1000)
 
-    if log: print('Predicting...')
-    label_prediction = clf.predict(code_test)
-    accuracy = accuracy_score(label_test, label_prediction)
-    if log: print('Done')
+# Training
 
-    if log: print('Accuracy:', accuracy)
-    return accuracy
+clf.fit(code_train, label_train)
 
-for crossing_count in range(6, 20, 2):
-    for knot_count in range(2, 6):
-        accuracy = get_accuracy(knot_count, crossing_count, 50_000)
-        print(f"{knot_count}k {crossing_count}x | {accuracy}")
+# Predicting
 
+label_prediction = clf.predict(code_test)
+accuracy = accuracy_score(label_test, label_prediction)
 
-# Remeasure accuracy
-
-# successes = 0
-# TRIALS = 1000
-# for i in range(TRIALS):
-#     unknot = ut.knot(0, 1)
-#     while len(unknot.pd_code) < 8:
-#         unknot = ut.apply_random_move(unknot, 0)
-
-#     trefoil = ut.knot(3, 1)
-#     while len(trefoil.pd_code) < 8:
-#         trefoil = ut.apply_random_move(trefoil, 0)
-    
-#     # print([pd_code_to_vector(knot.pd_code, CROSSINGS+1) for knot in first_knots])
-#     label_prediction = clf.predict([pd_code_to_vector(knot.pd_code, CROSSINGS+1) for knot in (unknot, trefoil)])
-#     # print(label_prediction)
-#     if label_prediction[0] == 0: successes += 1
-#     if label_prediction[1] == 1: successes += 1
-# print('Remeasured accuracy:', successes / (TRIALS*2))
+print(f"{data_filename} | {accuracy}")

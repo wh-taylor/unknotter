@@ -1,30 +1,23 @@
 import unknotter as ut
+import sys
 
-import csv
+if len(sys.argv) != 4:
+    print("Expected `python3 generate.py <# knots> <# crossings> <data size>`.")
+    sys.exit(1)
 
-n = 2
-crossings = 6
-logAll = False
-log100 = False
-# filename = f'training{n}_{crossings}x.csv'
-filename = f'darwin_training{n}_{crossings}x.csv'
+knot_count = int(sys.argv[1])
+crossing_count = int(sys.argv[2])
+data_size = int(sys.argv[3])
 
-knot_choices = list(ut.first_n_knots(n))
+knot_choices = list(ut.first_n_knots(knot_count))
 
-knots: list[ut.Diagram] = []
-for i in range(50):
-    knot = knot_choices[i % n][1]
-    while len(knot.pd_code) < crossings:
+knot_count: list[ut.Diagram] = []
+for i in range(data_size):
+    knot = knot_choices[i % knot_count][1]
+    while len(knot.pd_code) < crossing_count:
         knot = ut.apply_random_move(knot, 0)
-    knots.append(knot)
-    if logAll or (log100 and (i+1) % 100 == 0):
-        print(knot_choices[i % n][0], '| Length:', len(knot.pd_code), 'Index:', i+1)
+    knot_count.append(knot)
 
-data = [
-    ['Knot', 'Code'],
-] + [[knot_choices[i % n][0], ut.get_plaintext_code(knot)] for i, knot in enumerate(knots)]
+data = [[knot_choices[i % knot_count][0], ut.get_plaintext_code(knot)] for i, knot in enumerate(knot_count)]
 
-# with open(filename, 'w', newline='') as file:
-#     csv.writer(file).writerows(data)
-
-print('\n'.join(','.join(line) for line in data[1:]))
+print('\n'.join(','.join(line) for line in data))
