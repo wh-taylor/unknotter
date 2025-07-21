@@ -29,11 +29,6 @@ from GitHub.
 
     git clone https://github.com/wh-taylor/unknotter.git
 
-Then, `cd` into the repository. Once you are in the `unknotter`
-repository, activate the virtual environment.
-
-    source env/bin/activate
-
 You can now run Python files normally.
 
     python3 <file>
