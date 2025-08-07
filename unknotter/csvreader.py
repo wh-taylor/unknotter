@@ -6,6 +6,7 @@ def read_to_list(filename: str, count: int = -1):
     with open(filename) as f:
         lines = f.readlines()[1:count+1] if count >= 0 else f.readlines()
         for line in lines:
+            if line == '\n': continue
             parts = line.split(',')
             name, raw_pd = parts[0], parts[1]
             catalog.append((name, _raw_pd_to_pd(raw_pd)))
