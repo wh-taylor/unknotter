@@ -44,7 +44,7 @@ code_train, code_test, label_train, label_test = train_test_split(
     random_state=1,
 )
 
-clf = MLPClassifier(solver='sgd', alpha=1e-5, hidden_layer_sizes=[100, 100], max_iter=1000)
+clf = MLPClassifier(solver='sgd', alpha=1e-5, hidden_layer_sizes=[100, 100, 100, 100], max_iter=1000)
 
 # Training
 
